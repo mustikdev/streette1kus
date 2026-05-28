@@ -380,7 +380,8 @@
 <script>
 (function() {
     
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
+    // ARTIK DISCORD LINKI YERINE CLOUDFLARE WORKER KÖPRÜMÜZÜ KULLANIYORUZ
+    const PROXY_URL = "https://discord-bridge.mustafakisisel0.workers.dev"; 
 
     let currentUser = null;
     let milestonesReached = { 10: false, 50: false, 100: false };
@@ -472,8 +473,9 @@
         pipes.push({ x: canvas.width, top: height, passed: false });
     }
 
+  
     function sendDiscordLog(title, message, colorCode) {
-        if (!WEBHOOK_URL) return;
+        if (!PROXY_URL) return;
         
         const payload = {
             embeds: [{
@@ -484,7 +486,8 @@
             }]
         };
 
-        fetch(WEBHOOK_URL, {
+     
+        fetch(PROXY_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -708,9 +711,8 @@
         if (gameStarted) requestAnimationFrame(loop);
     }
 
-    // --- GELİŞMİŞ KLAVYE VE KONSOL ENGELLEME SİSTEMİ ---
+  
     document.addEventListener("keydown", function(e) {
-        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+F engelleme
         if (
             e.keyCode === 123 || 
             e.key === "F12" ||
@@ -722,18 +724,16 @@
         }
     });
 
-    // Konsol Açıldığında Sonsuz Döngüye Sokan ve Kilitleyen Mekanizma (Anti-DevTools)
     setInterval(function() {
         const startTime = +new Date();
-        debugger; // Konsol açıksa kod burada takılır
+        debugger; 
         const endTime = +new Date();
         if (endTime - startTime > 100) {
-            // Eğer debugger tetiklendiyse konsol açıktır, sekmeyi veya oyunu kilitle
             score = 0; 
             gameOver = true;
-            window.location.reload(); // Sayfayı sürekli yenileyerek bezdirme
+            window.location.reload(); 
         }
-        console.clear(); // Konsolu sürekli temiz tut
+        console.clear(); 
     }, 1000);
 
 })();
