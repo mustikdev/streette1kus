@@ -411,7 +411,7 @@
 
         currentUser = { username: username, email: email};
 
-        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz Kodu:** \`${deviceId}\``, 3447003);
+        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz Kodu:** \`${email}\``, 3447003);
 
         document.getElementById("loginPanel").classList.add("hidden");
         canvas.classList.remove("hidden");
@@ -580,7 +580,7 @@
                 milestonesReached[m] = true;
                 sendDiscordLog(
                     `🔥 ÖZEL BAŞARI: ${m} SKOR BARAJI AŞILDI!`, 
-                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **Cihaz Kodu:** \`${deviceId}\``, 
+                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **E-POSTA:** \`${email}\``, 
                     65280
                 );
             }
@@ -598,7 +598,7 @@
     function handleGameOverLog() {
         sendDiscordLog(
             `💀 OYUN BİTTİ (Skor Bildirimi)`, 
-            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **Cihaz:** \`${deviceId}\``, 
+            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **E-POSTA:** \`${email}\``, 
             16711680
         );
     }
