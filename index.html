@@ -150,9 +150,9 @@
             return;
         }
 
-        currentUser = { username: username, email: email, device: deviceId };
+        currentUser = { username: username, email: email};
 
-        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz:** \`${deviceId}\``, 3447003);
+        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **:E-Posta** \`${email}\``, 3447003);
 
         document.getElementById("loginPanel").classList.add("hidden");
         canvas.classList.remove("hidden");
