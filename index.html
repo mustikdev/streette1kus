@@ -151,11 +151,10 @@
             border: 3px solid #ff1a1a;
             border-radius: 16px;
             box-shadow: 0 0 25px rgba(255, 26, 26, 0.6), inset 0 0 15px rgba(255, 26, 26, 0.2);
-            padding: 25px 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            gap: 12px;
             z-index: 5;
             text-align: center;
         }
@@ -163,89 +162,28 @@
         .left-banner { left: calc(50% - 580px); }
         .right-banner { right: calc(50% - 580px); }
 
-        .banner-header {
-            border-bottom: 2px dashed rgba(255, 26, 26, 0.4);
-            width: 100%;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-        }
-        .banner-title {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #ffffff;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        .banner-subtitle {
-            font-size: 13px;
-            color: #ff1a1a;
-            font-weight: bold;
-            letter-spacing: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-        }
-        .banner-item {
-            width: 100%;
-            background: rgba(20, 20, 25, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
+        /* --- REKLAM ALANI STİLLERİ --- */
+        .ad-space {
+            flex: 1;
             display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .banner-item.gold { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); }
-        .banner-item.silver { border-color: #c0c0c0; box-shadow: 0 0 10px rgba(192, 192, 192, 0.1); }
-        .banner-item.bronze { border-color: #cd7f32; box-shadow: 0 0 10px rgba(205, 127, 50, 0.1); }
-        
-        .item-label {
-            font-size: 11px;
-            text-transform: uppercase;
+            justify-content: center;
+            align-items: center;
+            background: rgba(20, 20, 25, 0.85);
+            border: 2px dashed rgba(255, 26, 26, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
             color: #888;
             letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
         }
-        .item-user {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 2px 0;
-        }
-        .item-prize {
-            font-size: 15px;
-            font-weight: bold;
-        }
-        .item-or {
-            font-size: 10px;
-            color: #aaa;
-            margin: 1px 0;
-        }
-        .banner-footer-box {
-            margin-top: auto;
-            background: rgba(255, 26, 26, 0.1);
-            border: 1px solid #ff1a1a;
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: bold;
+        .ad-space:hover {
+            border-color: #ff1a1a;
             color: #fff;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        .banner-info-text {
-            font-size: 11px;
-            color: #999;
-            margin-top: 10px;
-            line-height: 1.4;
-        }
-        .developer-credit {
-            font-size: 10px;
-            color: #555;
-            margin-top: 10px;
-            padding-top: 5px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            background: rgba(255, 26, 26, 0.05);
+            box-shadow: 0 0 10px rgba(255, 26, 26, 0.2);
         }
 
         @media (max-width: 1150px) {
@@ -262,36 +200,9 @@
 <body oncontextmenu="return false;">
 
 <div class="side-banner left-banner">
-    <div class="banner-header">
-        <div class="banner-title">Büyük Sezon</div>
-        <div class="banner-subtitle">Skor Etkinliği</div>
-    </div>
-    
-    <div class="banner-item gold">
-        <span class="item-label">Sezon Birincisi</span>
-        <span class="item-user rank-1">1. OYUNCU</span>
-        <span class="item-prize rank-1">100.000 TL</span>
-        <span class="item-or">VEYA</span>
-        <span class="item-prize rank-1">100 GR ALTIN</span>
-    </div>
-
-    <div class="banner-item silver">
-        <span class="item-label">Sezon İkincisi</span>
-        <span class="item-user rank-2">2. OYUNCU</span>
-        <span class="item-prize rank-2">75.000 TL</span>
-        <span class="item-or">VEYA</span>
-        <span class="item-prize rank-2">50 GR ALTIN</span>
-    </div>
-
-    <div class="banner-item bronze">
-        <span class="item-label">Sezon Üçüncüsü</span>
-        <span class="item-user rank-3">3. OYUNCU</span>
-        <span class="item-prize rank-3">50.000 TL!</span>
-    </div>
-
-    <div class="banner-footer-box">İLK 100 SKOR GEÇERLİDİR</div>
-    <p class="banner-info-text">Hemen oyuna gir, kuşunu uçur ve<br><strong>Sokakların Kralı</strong> unvanını kap!</p>
-    <p class="developer-credit">Mustafa AKTAŞ tarafından geliştirilmiştir.</p>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
 </div>
 
 <div id="gameWrapper">
@@ -356,36 +267,9 @@
 </div>
 
 <div class="side-banner right-banner">
-    <div class="banner-header">
-        <div class="banner-title">Büyük Sezon</div>
-        <div class="banner-subtitle">Skor Etkinliği</div>
-    </div>
-    
-    <div class="banner-item gold">
-        <span class="item-label">Sezon Birincisi</span>
-        <span class="item-user rank-1">1. OYUNCU</span>
-        <span class="item-prize rank-1">100.000 TL</span>
-        <span class="item-or">VEYA</span>
-        <span class="item-prize rank-1">100 GR ALTIN</span>
-    </div>
-
-    <div class="banner-item silver">
-        <span class="item-label">Sezon İkincisi</span>
-        <span class="item-user rank-2">2. OYUNCU</span>
-        <span class="item-prize rank-2">75.000 TL</span>
-        <span class="item-or">VEYA</span>
-        <span class="item-prize rank-2">50 GR ALTIN</span>
-    </div>
-
-    <div class="banner-item bronze">
-        <span class="item-label">Sezon Üçüncüsü</span>
-        <span class="item-user rank-3">3. OYUNCU</span>
-        <span class="item-prize rank-3">50.000 TL!</span>
-    </div>
-
-    <div class="banner-footer-box">İLK 100 SKOR GEÇERLİDİR</div>
-    <p class="banner-info-text">Hemen oyuna gir, kuşunu uçur ve<br><strong>Sokakların Kralı</strong> unvanını kap!</p>
-    <p class="developer-credit">Mustafa AKTAŞ tarafından geliştirilmiştir.</p>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
+    <div class="ad-space">BURAYA REKLAM VEREBİLİRSİNİZ</div>
 </div>
 
 <script>
@@ -711,7 +595,6 @@
         ctx.shadowBlur = 4;
         ctx.fillText(`SKOR: ${score}`, 15, 30);
         ctx.font = "12px Arial";
-        ctx.fillText(`HIZ SEVİYESİ: ${Math.floor(score / 10) + 1}`, 15, 50);
         ctx.shadowBlur = 0;
     }
 
