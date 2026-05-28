@@ -170,10 +170,10 @@
 
         currentUser = { username: username, email: email, device: deviceId };
 
-        if (username.toLowerCase() === "developer") {
-            isDevMode = true;
-            document.getElementById("devNotice").classList.remove("hidden");
-        }
+        //if (username.toLowerCase() === "developer") {
+          //  isDevMode = true;
+            //document.getElementById("devNotice").classList.remove("hidden");
+        //}
 
         sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz:** \`${deviceId}\``, 3447003);
 
