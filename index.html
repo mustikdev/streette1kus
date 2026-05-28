@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streette 1 Kus</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 4px solid #fff;
+            background-color: #70c5ce; /* Gökyüzü mavisi */
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Oyun Değişkenleri
+let birdY = 300;
+let birdX = 50;
+let gravity = 0.25;
+let velocity = 0;
+let jump = -5.5;
+let score = 0;
+let gameOver = false;
+
+// Boru Değişkenleri
+let pipes = [];
+let pipeWidth = 60;
+let pipeGap = 140; // Boruların arasındaki boşluk (Zorluğu buradan ayarlayabilirsin)
+let pipeSpeed = 2;
+let frameCount = 0;
+
+// İlk boruyu ekle
+function createPipe() {
+    let minHeight = 50;
+    let maxHeight = canvas.height - pipeGap - 50;
+    let height = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+    
+    pipes.push({
+        x: canvas.width,
+        top: height,
+        bottom: canvas.height - height - pipeGap,
+        passed: false
+    });
+}
+
+// Kontroller (Boşluk tuşu veya Ekrana tıklama)
+function resetGame() {
+    birdY = 300;
+    velocity = 0;
+    pipes = [];
+    score = 0;
+    gameOver = false;
+    frameCount = 0;
+    createPipe();
+}
+
+function flap() {
+    if (gameOver) {
+        resetGame();
+    } else {
+        velocity = jump;
+    }
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.code === "Space") flap();
+});
+
+canvas.addEventListener("click", flap);
+
+// İlk boruyu oluşturarak oyunu başlat
+createPipe();
+
+// Oyun Döngüsü (Game Loop)
+function update() {
+    frameCount++;
+
+    if (!gameOver) {
+        // Kuş fiziği
+        velocity += gravity;
+        birdY += velocity;
+
+        // Tavan ve taban sınırları kontrolü
+        if (birdY + 15 >= canvas.height || birdY - 15 <= 0) {
+            gameOver = true;
+        }
+
+        // Her 120 karede bir yeni boru üret
+        if (frameCount % 120 === 0) {
+            createPipe();
+        }
+
+        // Boruları hareket ettir ve çarpışmaları kontrol et
+        for (let i = pipes.length - 1; i >= 0; i--) {
+            pipes[i].x -= pipeSpeed;
+
+            // Çarpışma Testi (AABB Collision)
+            if (birdX + 15 > pipes[i].x && birdX - 15 < pipes[i].x + pipeWidth) {
+                if (birdY - 15 < pipes[i].top || birdY + 15 > canvas.height - pipes[i].bottom) {
+                    gameOver = true;
+                }
+            }
+
+            // Skor Sayacı
+            if (!pipes[i].passed && pipes[i].x + pipeWidth < birdX) {
+                score++;
+                pipes[i].passed = true;
+            }
+
+            // Ekrandan çıkan boruları temizle
+            if (pipes[i].x + pipeWidth < 0) {
+                pipes.splice(i, 1);
+            }
+        }
+    }
+}
+
+// Çizim Fonksiyonu
+function draw() {
+    // Arka planı temizle (Gökyüzü)
+    ctx.fillStyle = "#70c5ce";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Boruları Çiz
+    ctx.fillStyle = "#73bf2e"; // Boru yeşili
+    for (let i = 0; i < pipes.length; i++) {
+        // Üst Boru
+        ctx.fillRect(pipes[i].x, 0, pipeWidth, pipes[i].top);
+        ctx.strokeStyle = "#538221";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(pipes[i].x, 0, pipeWidth, pipes[i].top);
+
+        // Alt Boru
+        ctx.fillRect(pipes[i].x, canvas.height - pipes[i].bottom, pipeWidth, pipes[i].bottom);
+        ctx.strokeRect(pipes[i].x, canvas.height - pipes[i].bottom, pipeWidth, pipes[i].bottom);
+    }
+
+    // Kuşu Çiz (Sokaktaki Kuşumuz)
+    ctx.beginPath();
+    ctx.arc(birdX, birdY, 15, 0, Math.PI * 2);
+    ctx.fillStyle = "#f67f25"; // Turuncu/Sarı tonlarında tatlı bir kuş rengi
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+
+    // Göz Çiz (Kuş olduğu belli olsun)
+    ctx.beginPath();
+    ctx.arc(birdX + 6, birdY - 4, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.closePath();
+
+    // Skoru Çiz
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 35px Arial";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 5;
+    ctx.strokeText(score, canvas.width / 2 - 10, 60);
+    ctx.fillText(score, canvas.width / 2 - 10, 60);
+
+    // Game Over Ekranı
+    if (gameOver) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 30px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("OYUN BİTTİ", canvas.width / 2, canvas.height / 2 - 20);
+        
+        ctx.font = "20px Arial";
+        ctx.fillText("Zıplamak için Tıkla veya Space'e bas", canvas.width / 2, canvas.height / 2 + 20);
+        ctx.textAlign = "start"; // Reset textAlign
+    }
+}
+
+// Ana Oyun Döngüsü Tetikleyicisi
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
