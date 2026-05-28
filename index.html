@@ -60,7 +60,7 @@ function createPipe() {
     });
 }
 
-// Kontroller (Boşluk tuşu veya Ekrana tıklama)
+// KONTROL DEPİŞKENLERİ
 function resetGame() {
     birdY = 300;
     velocity = 0;
@@ -85,10 +85,10 @@ document.addEventListener("keydown", function(e) {
 
 canvas.addEventListener("click", flap);
 
-// İlk boruyu oluşturarak oyunu başlat
+// OYUNUN BAŞLANGICI
 createPipe();
 
-// Oyun Döngüsü (Game Loop)
+// OYUN DÖNGÜSÜNÜ YARATIR
 function update() {
     frameCount++;
 
@@ -152,7 +152,7 @@ function draw() {
         ctx.strokeRect(pipes[i].x, canvas.height - pipes[i].bottom, pipeWidth, pipes[i].bottom);
     }
 
-    // Kuşu Çiz (Sokaktaki Kuşumuz)
+    // Kuşu Çiz 
 
     ctx.beginPath();
     ctx.arc(birdX, birdY, 15, 0, Math.PI * 2);
