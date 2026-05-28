@@ -98,12 +98,44 @@
             box-shadow: 0px 0px 30px rgba(0,0,0,0.8);
             z-index: 1;
         }
+
+        /* --- SAĞ VE SOL BOŞLUKLARI DOLDURAN AFİŞ ALANLARI --- */
+        .side-banner {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: calc((100vw - 450px) / 2); /* Ekran genişliğinden oyun alanını çıkarıp ikiye böler */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #050508;
+            z-index: 0;
+        }
+        
+        .left-banner { left: 0; border-right: 2px solid #ff1a1a; }
+        .right-banner { right: 0; border-left: 2px solid #ff1a1a; }
+
+        .side-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Resmi ezmeden veya esnetmeden alanı kaplatır */
+            opacity: 0.5; /* Oyuncunun gözünü çok almaması için hafif saydam arka plan havası */
+        }
+        
+        /* Ekran küçülüp mobil cihaz boyutuna geldiğinde afişleri otomatik gizler */
+        @media (max-width: 450px) {
+            .side-banner { display: none !important; }
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
+<div class="side-banner left-banner">
+    <img src="solafis.png" alt="Sol Afiş">
+</div>
+
 <div id="gameWrapper">
-    <!-- GİRİŞ PANELİ -->
     <div id="loginPanel" class="panel">
         <div class="logo-container">
             <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
@@ -117,8 +149,11 @@
         <button id="loginBtn" onclick="window.handleLogin()">Oyuna Başla</button>
     </div>
 
-    <!-- OYUN CANVAS -->
     <canvas id="gameCanvas" class="hidden"></canvas>
+</div>
+
+<div class="side-banner right-banner">
+    <img src="sagafis.png" alt="Sağ Afiş">
 </div>
 
 <script>
@@ -309,7 +344,7 @@
                 milestonesReached[m] = true;
                 sendDiscordLog(
                     `🔥 ÖZEL BAŞARI: ${m} SKOR BARAJI AŞILDI!`, 
-                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **Cihaz Kodu:** \`${currentUser.device}\``, 
+                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **Cihaz Kodu:** \`${deviceId}\``, 
                     65280
                 );
             }
@@ -327,7 +362,7 @@
     function handleGameOverLog() {
         sendDiscordLog(
             `💀 OYUN BİTTİ (Skor Bildirimi)`, 
-            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **Cihaz:** \`${currentUser.device}\``, 
+            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **Cihaz:** \`${deviceId}\``, 
             16711680
         );
     }
