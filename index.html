@@ -238,6 +238,15 @@
             margin-top: 10px;
             line-height: 1.4;
         }
+        .developer-credit {
+            font-size: 10px;
+            color: #555;
+            margin-top: 10px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
         @media (max-width: 1150px) {
             .side-banner { display: none !important; }
@@ -282,6 +291,7 @@
 
     <div class="banner-footer-box">İLK 100 SKOR GEÇERLİDİR</div>
     <p class="banner-info-text">Hemen oyuna gir, kuşunu uçur ve<br><strong>Sokakların Kralı</strong> unvanını kap!</p>
+    <p class="developer-credit">Mustafa AKTAŞ tarafından geliştirilmiştir.</p>
 </div>
 
 <div id="gameWrapper">
@@ -375,12 +385,12 @@
 
     <div class="banner-footer-box">İLK 100 SKOR GEÇERLİDİR</div>
     <p class="banner-info-text">Hemen oyuna gir, kuşunu uçur ve<br><strong>Sokakların Kralı</strong> unvanını kap!</p>
+    <p class="developer-credit">Mustafa AKTAŞ tarafından geliştirilmiştir.</p>
 </div>
 
 <script>
 (function() {
     
-    // ARTIK DISCORD LINKI YERINE CLOUDFLARE WORKER KÖPRÜMÜZÜ KULLANIYORUZ
     const PROXY_URL = "https://discord-bridge.mustafakisisel0.workers.dev"; 
 
     let currentUser = null;
