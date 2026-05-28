@@ -92,7 +92,6 @@
         .hidden { display: none !important; }
         
         canvas {
-            background: linear-gradient(to bottom, #111324, #201a30);
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
@@ -117,32 +116,45 @@
 <div id="gameWrapper">
     <div id="devNotice" class="hidden">DEV MODE: [H] Ölümsüzlük | [K] +10 Skor</div>
 
+    <!-- GİRİŞ PANELİ -->
     <div id="loginPanel" class="panel">
         <div class="logo-container">
             <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
         </div>
-        <h2>Giriş Yap</h2>
+        <h2>Oyuncu Girişi</h2>
         <div class="error-msg" id="loginError"></div>
         
         <input type="text" id="username" placeholder="Kullanıcı Adı (IC)">
         <input type="email" id="email" placeholder="E-Posta Adresi">
         
-        <button id="loginBtn" onclick="window.handleLogin()">Oyuna Katıl</button>
+        <button id="loginBtn" onclick="window.handleLogin()">Oyuna Başla</button>
     </div>
 
+    <!-- OYUN CANVAS -->
     <canvas id="gameCanvas" class="hidden"></canvas>
 </div>
 
 <script>
 (function() {
-    // GÜVENLİK İÇİN WEBHOOK URL'NİZİ BURAYA YAPIŞTIRIN (Sistem bunu arka planda maskeler)
-    const SECRET_WEBHOOK = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
+    // Tanımladığın Discord Webhook Linki
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
 
     let currentUser = null;
     let isDevMode = false;
     let godMode = false;
-    let reportSent = false;
     
+    // Milisaniye bazlı tetikleme engeli için her dönüm noktası takibi
+    let milestonesReached = { 10: false, 50: false, 100: false };
+
+    // Arka plan temaları (Her 10 skorda bir değişir)
+    const backgroundThemes = [
+        { top: "#1a80b8", bottom: "#87ceeb", building: "#104e73" }, // 0-9 Skor: Gündüz
+        { top: "#e65c00", bottom: "#f9d423", building: "#5a2000" }, // 10-19 Skor: Gün Batımı
+        { top: "#0f2027", bottom: "#203a43", building: "#071014" }, // 20-29 Skor: Gece
+        { top: "#2c3e50", bottom: "#3498db", building: "#1a252f" }, // 30-39 Skor: Fırtına Mavisi
+        { top: "#61045f", bottom: "#aa076b", building: "#300030" }  // 40+ Skor: Siber Gece
+    ];
+
     const deviceId = btoa(navigator.userAgent + screen.width + screen.height).substring(0, 12);
 
     window.handleLogin = function() {
@@ -151,28 +163,20 @@
         const errorDiv = document.getElementById("loginError");
         
         if (!username || !email) {
-            errorDiv.innerText = "Lütfen tüm alanları doldurun!";
+            errorDiv.innerText = "Lütfen alanları boş bırakmayın!";
             errorDiv.style.display = "block";
             return;
         }
 
-        // Kullanıcı verisini ayarla
-        currentUser = {
-            username: username,
-            email: email,
-            device: deviceId
-        };
+        currentUser = { username: username, email: email, device: deviceId };
 
-        // Geliştirici hile kontrolü
         if (username.toLowerCase() === "developer") {
             isDevMode = true;
             document.getElementById("devNotice").classList.remove("hidden");
         }
 
-        // Discord'a giriş bildirimini anında gönder
-        sendDiscordLog("GİRİŞ YAPILDI", `👤 **Kullanıcı:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz ID:** \`${deviceId}\``);
+        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz:** \`${deviceId}\``, 3447003);
 
-        // Paneli kapat, oyunu aç
         document.getElementById("loginPanel").classList.add("hidden");
         canvas.classList.remove("hidden");
         
@@ -181,17 +185,16 @@
         loop();
     };
 
-    // --- CANVAS MOTORU ---
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let birdY, velocity, score, gameOver, pipes, frameCount;
+    let birdY, velocity, score, gameOver, pipes, frameCount, wingState;
     
-    const gravity = 0.15;
-    const jump = -4.2;
-    const pipeSpeed = 1.5;
-    const pipeGap = 170; 
-    const pipeWidth = 80;
+    const gravity = 0.16;
+    const jump = -4.3;
+    const pipeSpeed = 1.6;
+    const pipeGap = 165; 
+    const pipeWidth = 75;
 
     let backBuildings = [];
 
@@ -205,7 +208,7 @@
 
         backBuildings = [];
         for(let i = 0; i < 6; i++) {
-            backBuildings.push({ x: i * 90, width: 65, height: 100 + Math.random() * (canvas.height / 3) });
+            backBuildings.push({ x: i * 90, width: 70, height: 120 + Math.random() * (canvas.height / 3) });
         }
     }
     window.addEventListener("resize", () => { if(currentUser && !gameOver) resizeCanvas(); });
@@ -216,8 +219,9 @@
         score = 0;
         gameOver = false;
         frameCount = 0;
+        wingState = 0;
         pipes = [];
-        reportSent = false;
+        milestonesReached = { 10: false, 50: false, 100: false };
         createPipe();
     }
 
@@ -228,20 +232,20 @@
         pipes.push({ x: canvas.width, top: height, passed: false });
     }
 
-    // DISCORD WEBHOOK ENTEGRASYONU (Maskelenmiş Gönderim)
-    function sendDiscordLog(title, message) {
-        if (!SECRET_WEBHOOK) return;
+    // DISCORD GELİŞMİŞ LOG SİSTEMİ
+    function sendDiscordLog(title, message, colorCode) {
+        if (!WEBHOOK_URL) return;
         
         const payload = {
             embeds: [{
-                title: `🚨 ${title}`,
+                title: title,
                 description: message,
-                color: title.includes("REKOR") ? 65280 : 16711680,
+                color: colorCode,
                 timestamp: new Date()
             }]
         };
 
-        fetch(SECRET_WEBHOOK, {
+        fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -253,10 +257,9 @@
             if (e.code === "Space") {
                 e.preventDefault();
                 if (gameOver) resetGame();
-                else velocity = jump;
+                else { velocity = jump; wingState = 1; }
             }
             
-            // Hile Kontrolleri
             if (isDevMode) {
                 if (e.key === "h" || e.key === "H") {
                     godMode = !godMode;
@@ -272,20 +275,22 @@
     canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
         if (gameOver) resetGame();
-        else velocity = jump;
+        else { velocity = jump; wingState = 1; }
     }, {passive: false});
 
     canvas.addEventListener("click", () => {
         if (currentUser && !canvas.classList.contains("hidden")) {
             if (gameOver) resetGame();
-            else velocity = jump;
+            else { velocity = jump; wingState = 1; }
         }
     });
 
     function update() {
         frameCount++;
+        if (frameCount % 10 === 0 && wingState > 0) wingState = 0;
+
         backBuildings.forEach(b => {
-            b.x -= 0.2;
+            b.x -= 0.25;
             if(b.x + b.width < 0) b.x = canvas.width;
         });
 
@@ -293,40 +298,69 @@
             velocity += gravity;
             birdY += velocity;
 
-            if (!godMode && (birdY + 12 >= canvas.height || birdY - 12 <= 0)) gameOver = true;
+            if (!godMode && (birdY + 12 >= canvas.height || birdY - 12 <= 0)) {
+                gameOver = true;
+                handleGameOverLog();
+            }
 
-            if (frameCount % 150 === 0) createPipe();
+            if (frameCount % 140 === 0) createPipe();
 
             for (let i = pipes.length - 1; i >= 0; i--) {
                 pipes[i].x -= pipeSpeed;
 
-                let birdX = 50; 
+                let birdX = 60; 
                 if (!godMode && (birdX + 12 > pipes[i].x && birdX - 12 < pipes[i].x + pipeWidth)) {
                     if (birdY - 10 < pipes[i].top || birdY + 10 > pipes[i].top + pipeGap) {
                         gameOver = true;
+                        handleGameOverLog();
                     }
                 }
 
                 if (!pipes[i].passed && pipes[i].x + pipeWidth < birdX) {
                     score++;
                     pipes[i].passed = true;
+                    checkMilestones();
                 }
 
                 if (pipes[i].x + pipeWidth < 0) pipes.splice(i, 1);
             }
-            
-            // 100 Skora Ulaşıldığında Bildirim Tetikle
-            if (score >= 100 && !reportSent && !godMode) {
-                reportSent = true;
-                sendDiscordLog("YENİ SKOR REKORU!", `👤 **Kullanıcı:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🏆 **Skor:** ${score}\n💻 **Cihaz ID:** \`${currentUser.device}\``);
-            }
-        } else {
-            // Oyun bittiğinde eğer 100 barajını ilk defa o an aştıysa garanti loglama
-            if (score >= 100 && !reportSent && !godMode) {
-                reportSent = true;
-                sendDiscordLog("YENİ SKOR REKORU!", `👤 **Kullanıcı:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🏆 **Son Skor:** ${score}\n💻 **Cihaz ID:** \`${currentUser.device}\``);
-            }
         }
+    }
+
+    // Çarpan Noktalarında Özel Tebrik Mesajı Gönderme
+    function checkMilestones() {
+        if (godMode) return;
+        
+        let targetMilestones = [10, 50, 100];
+        targetMilestones.forEach(m => {
+            if (score === m && !milestonesReached[m]) {
+                milestonesReached[m] = true;
+                sendDiscordLog(
+                    `🔥 ÖZEL BAŞARI: ${m} SKOR BARAJI AŞILDI!`, 
+                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **Cihaz Kodu:** \`${currentUser.device}\``, 
+                    65280 // Canlı Yeşil Renk
+                );
+            }
+        });
+
+        // 100'den sonraki her 50 ve 100 katlarında da özel mesaj atsın
+        if (score > 100 && (score % 50 === 0 || score % 100 === 0)) {
+            sendDiscordLog(
+                `🚀 EFSANEVİ SKOR DÖNÜM NOKTASI: ${score}!`, 
+                `👑 Sokaklar Yeni Bir Kral Görüyor!\n👤 **Oyuncu:** ${currentUser.username}\n🎯 **Mevcut Rekor:** **${score}**`, 
+                16711900 // Parlak Pembe/Mor
+            );
+        }
+    }
+
+    // Normal Yanma Bildirimi (Her yandığında ne kadar skor yaptığını atar)
+    function handleGameOverLog() {
+        if (godMode) return;
+        sendDiscordLog(
+            `💀 OYUN BİTTİ (Skor Bildirimi)`, 
+            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **Cihaz:** \`${currentUser.device}\``, 
+            16711680 // Kırmızı Renk
+        );
     }
 
     const logoElement = new Image();
@@ -335,49 +369,121 @@
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Her 10 skorda bir temayı hesapla
+        let themeIndex = Math.min(Math.floor(score / 10), backgroundThemes.length - 1);
+        let currentTheme = backgroundThemes[themeIndex];
+
+        // Gökyüzü Gradiyenti
         let bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        bgGrad.addColorStop(0, "#090a10");
-        bgGrad.addColorStop(1, "#151624");
+        bgGrad.addColorStop(0, currentTheme.top);
+        bgGrad.addColorStop(1, currentTheme.bottom);
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = "#0f1019";
+        // Arka Plan Şehir Silüeti
+        ctx.fillStyle = currentTheme.building;
         backBuildings.forEach(b => {
             ctx.fillRect(b.x, canvas.height - b.height, b.width, b.height);
         });
 
+        // GERÇEKÇİ BORU ÇİZİMİ (Metalik Efektli)
         pipes.forEach(p => {
-            let wallGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
-            wallGrad.addColorStop(0, "#3a2828");
-            wallGrad.addColorStop(0.5, "#523737");
-            wallGrad.addColorStop(1, "#2b1e1e");
-            ctx.fillStyle = wallGrad;
+            // Üst ve Alt ana boru gövde gradiyenti
+            let pipeGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+            pipeGrad.addColorStop(0, "#1e3c0d");
+            pipeGrad.addColorStop(0.3, "#55a630");
+            pipeGrad.addColorStop(0.7, "#2b9348");
+            pipeGrad.addColorStop(1, "#0a1f07");
+            ctx.fillStyle = pipeGrad;
             
-            ctx.fillRect(p.x, 0, pipeWidth, p.top);
-            ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - (p.top + pipeGap));
+            // Üst Boru Gövdesi
+            ctx.fillRect(p.x + 4, 0, pipeWidth - 8, p.top);
+            // Alt Boru Gövdesi
+            ctx.fillRect(p.x + 4, p.top + pipeGap, pipeWidth - 8, canvas.height - (p.top + pipeGap));
 
-            ctx.fillStyle = "#1e1515";
-            ctx.fillRect(p.x - 2, p.top - 12, pipeWidth + 4, 12);
-            ctx.fillRect(p.x - 2, p.top + pipeGap, pipeWidth + 4, 12);
+            // Boru Başlıkları (Daha geniş, belirgin kapaklar)
+            let capGrad = ctx.createLinearGradient(p.x - 4, 0, p.x + pipeWidth + 4, 0);
+            capGrad.addColorStop(0, "#224411");
+            capGrad.addColorStop(0.4, "#77cc44");
+            capGrad.addColorStop(1, "#112200");
+            ctx.fillStyle = capGrad;
+            
+            // Üst kapak ve alt kapak kutuları
+            ctx.fillRect(p.x, p.top - 24, pipeWidth, 24);
+            ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, 24);
+
+            // Boru gölge çizgileri (Gerçekçilik için yatay çizgiler)
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.fillRect(p.x, p.top - 4, pipeWidth, 4);
+            ctx.fillRect(p.x, p.top + pipeGap + 20, pipeWidth, 4);
         });
 
+        // GERÇEKÇİ KUŞ ÇİZİMİ
         ctx.save();
-        ctx.translate(50, birdY);
+        ctx.translate(60, birdY);
+        
+        // Kuyruk Tüyleri
+        ctx.fillStyle = "#4b6584";
+        ctx.beginPath();
+        ctx.moveTo(-12, 0);
+        ctx.lineTo(-20, -6);
+        ctx.lineTo(-18, 6);
+        ctx.fill();
+
+        // Kuş Gövdesi (Oval tombul gerçekçi gövde)
         ctx.beginPath();
         ctx.arc(0, 0, 13, 0, Math.PI * 2);
-        let birdGrad = ctx.createRadialGradient(-2, -2, 2, 0, 0, 13);
-        birdGrad.addColorStop(0, "#d1d8e0");
-        birdGrad.addColorStop(1, "#778ca3");
+        let birdGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 13);
+        birdGrad.addColorStop(0, "#f5cd79"); // Tatlı sarı/turuncu tonlarında kuş
+        birdGrad.addColorStop(0.8, "#f19066");
+        birdGrad.addColorStop(1, "#e66767");
         ctx.fillStyle = godMode ? "#00ff00" : birdGrad;
         ctx.fill();
-        ctx.strokeStyle = "#4b6584";
+        ctx.strokeStyle = "#cf6a17";
         ctx.lineWidth = 1.5;
         ctx.stroke();
+
+        // Gerçekçi Kanat (wingState durumuna göre yukarı veya aşağı açılı)
+        ctx.fillStyle = "#f7d794";
+        ctx.beginPath();
+        if (wingState === 1) {
+            ctx.ellipse(-2, -4, 8, 5, -Math.PI / 4, 0, Math.PI * 2); // Havalanırken yukarı
+        } else {
+            ctx.ellipse(-2, 2, 8, 5, Math.PI / 4, 0, Math.PI * 2);   // Süzülürken aşağı
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // Büyük Canlı Göz
+        ctx.beginPath();
+        ctx.arc(5, -4, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(6, -4, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#000";
+        ctx.fill();
+
+        // Belirgin Turuncu Gaga
+        ctx.fillStyle = "#e67e22";
+        ctx.beginPath();
+        ctx.moveTo(11, -2);
+        ctx.lineTo(19, -1);
+        ctx.lineTo(12, 4);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.restore();
 
+        // Skor Arayüzü
         ctx.fillStyle = "#fff";
         ctx.font = "bold 16px Arial";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 4;
         ctx.fillText(`SKOR: ${score}`, 15, 30);
+        ctx.font = "12px Arial";
+        ctx.fillText(`BÖLGE: ${themeIndex + 1}`, 15, 50);
+        ctx.shadowBlur = 0; // Gölgeyi sıfırla
 
         if (gameOver) {
             ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
@@ -394,7 +500,10 @@
             ctx.fillText("OYUN BİTTİ", canvas.width / 2, canvas.height / 2 + 65);
             ctx.font = "16px Arial";
             ctx.fillStyle = "#fff";
-            ctx.fillText(`Skorun: ${score}`, canvas.width / 2, canvas.height / 2 + 95);
+            ctx.fillText(`Toplam Skorun: ${score}`, canvas.width / 2, canvas.height / 2 + 95);
+            ctx.font = "12px Arial";
+            ctx.fillStyle = "#aaa";
+            ctx.fillText("Yeniden başlamak için ekrana tıklayın.", canvas.width / 2, canvas.height / 2 + 130);
             ctx.textAlign = "start";
         }
     }
@@ -405,7 +514,6 @@
         if (currentUser) requestAnimationFrame(loop);
     }
 
-    // F12 ve Sağ tık gibi temel kısıtlamalar aktif
     document.addEventListener("keydown", function(e) {
         if (e.key === "F12" || e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J"))) {
             e.preventDefault();
