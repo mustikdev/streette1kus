@@ -2,303 +2,595 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sokaklarda 1 Kuş - Büyük Sezon Etkinliği</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sokaklarda 1 Kuş</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background: radial-gradient(circle, #11151c 0%, #07090e 100%);
+            background-color: #0b0c10;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            color: #fff;
         }
-
-        /* --- AFİŞ ANA KUTUSU --- */
-        .poster {
-            width: 450px;
-            height: 650px;
-            background: linear-gradient(135deg, #141519 0%, #0b0c10 100%);
-            border: 3px solid #ff1a1a;
-            border-radius: 20px;
-            box-shadow: 0 0 35px rgba(255, 26, 26, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.8);
-            padding: 35px 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
+        #gameWrapper {
             position: relative;
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        /* Arka plan grid çizgileri (image_bcd460.jpg'deki gibi) */
-        .poster::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 25px 25px;
-            border-radius: 17px;
-            pointer-events: none;
-        }
-
-        /* --- LOGO VE BAŞLIK ALANI --- */
-        .logo-area {
-            width: 100%;
+            width: 100vw;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            z-index: 2;
+            background: #000;
+        }
+        .panel {
+            background: rgba(20, 20, 25, 0.96);
+            border: 2px solid #ff1a1a;
+            border-radius: 12px;
+            padding: 25px;
+            width: 95%;
+            max-width: 410px;
+            box-shadow: 0px 0px 20px rgba(255, 26, 26, 0.4);
+            text-align: center;
+            z-index: 1000;
+            position: absolute;
+        }
+        .logo-container {
+            width: 100%;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
         }
         .logo-img {
             width: 100%;
-            max-width: 260px; /* Okunabilirlik için büyütüldü */
-            filter: drop-shadow(0 0 12px rgba(255, 26, 26, 0.6));
+            max-height: 60px;
+            object-fit: contain;
+        }
+        
+        /* --- YENİ EKLENEN ÖDÜL PANOSU STİLLERİ --- */
+        .reward-board {
+            background: rgba(10, 10, 12, 0.8);
+            border: 1px dashed #ffcc00;
+            border-radius: 8px;
+            padding: 12px;
             margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
         }
-        .event-title {
-            font-size: 32px;
-            font-weight: 900;
-            color: #fff;
+        .reward-board h3 {
+            color: #ffcc00;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            margin: 0;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            animation: pulse 1.5s infinite alternate;
         }
-        .event-subtitle {
-            font-size: 13px;
-            color: #ff1a1a;
-            font-weight: 800;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            margin-top: 5px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 8px rgba(255, 26, 26, 0.6);
-        }
-
-        /* --- ÖDÜL KARTLARI ALANI --- */
-        .rewards-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 2;
-        }
-
-        .reward-card {
-            width: 100%;
-            height: 85px; /* Kart boyutu sabitlendi */
-            padding: 0 25px;
-            border-radius: 14px;
+        .reward-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.01);
-        }
-
-        /* Neon Çerçeveler */
-        .first-place {
-            border: 2px solid #ffd700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.25);
-        }
-        .second-place {
-            border: 2px solid #c0c0c0;
-            box-shadow: 0 0 15px rgba(192, 192, 192, 0.25);
-        }
-        .third-place {
-            border: 2px solid #ff9f43;
-            box-shadow: 0 0 15px rgba(255, 159, 67, 0.25);
-        }
-
-        .rank-badge {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-align: left;
-        }
-        
-        /* Madalya İkon Tasarımları */
-        .medal {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 14px;
-            color: #000;
-            box-shadow: 0 0 10px rgba(255,255,255,0.2);
-        }
-        .first-place .medal { background: #ffd700; box-shadow: 0 0 12px #ffd700; }
-        .second-place .medal { background: #c0c0c0; box-shadow: 0 0 12px #c0c0c0; }
-        .third-place .medal { background: #ff9f43; box-shadow: 0 0 12px #ff9f43; }
-
-        .rank-info {
-            display: flex;
-            flex-direction: column;
-        }
-        .rank-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #888;
-            font-weight: 600;
-        }
-        .rank-name {
-            font-size: 18px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-        .first-place .rank-name { color: #ffd700; }
-        .second-place .rank-name { color: #c0c0c0; }
-        .third-place .rank-name { color: #ff9f43; }
-
-        /* Kusursuz Sağ Blok Hizalaması */
-        .reward-value {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-end; /* Sağ kenara kusursuz hizalama */
-            text-align: right;
-            height: 100%;
-        }
-        .reward-price {
-            font-size: 16px;
-            font-weight: 800;
-            color: #fff;
-        }
-        .or-text {
-            font-size: 10px;
-            color: #666;
-            font-weight: 700;
-            margin: 1px 0;
-            letter-spacing: 1px;
-            width: 100%;
-        }
-        .reward-subprice {
             font-size: 13px;
-            font-weight: 700;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .first-place .reward-subprice { color: #ffd700; }
-        .second-place .reward-subprice { color: #c0c0c0; }
+        .reward-row:last-child { border-bottom: none; }
+        .rank-1 { color: #ffd700; font-weight: bold; } /* Altın */
+        .rank-2 { color: #c0c0c0; font-weight: bold; } /* Gümüş */
+        .rank-3 { color: #cd7f32; font-weight: bold; } /* Bronz */
+        .reward-text { text-align: right; font-weight: 600; }
+
+        @keyframes pulse {
+            from { text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); }
+            to { text-shadow: 0 0 15px rgba(255, 204, 0, 1); }
+        }
+        /* ---------------------------------------- */
+
+        .panel h2 { 
+            margin-top: 0; 
+            margin-bottom: 15px;
+            color: #fff; 
+            font-size: 18px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        .panel input {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #151518;
+            color: #fff;
+            font-size: 14px;
+        }
+        .panel input:focus { border-color: #ff1a1a; outline: none; }
+        .panel button {
+            width: 100%;
+            padding: 12px;
+            background: #ff1a1a;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+        .panel button:hover { background: #cc0000; box-shadow: 0 0 10px rgba(255, 26, 26, 0.5); }
+        .error-msg { color: #ff4a4a; font-size: 13px; margin: 5px 0; display: none; font-weight: 500; }
+        .hidden { display: none !important; }
         
-        /* Tek satır ödül tam ortalama */
-        .third-place .reward-price {
-            font-size: 20px;
-            color: #ff9f43;
-            text-shadow: 0 0 10px rgba(255, 159, 67, 0.3);
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0px 0px 30px rgba(0,0,0,0.8);
+            z-index: 1;
         }
 
-        /* --- ALT BİLGİ ALANI --- */
-        .footer-area {
+        .side-banner {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: calc((100vw - 450px) / 2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #050508;
+            z-index: 0;
+        }
+        
+        .left-banner { left: 0; border-right: 2px solid #ff1a1a; }
+        .right-banner { right: 0; border-left: 2px solid #ff1a1a; }
+
+        .side-banner img {
             width: 100%;
-            z-index: 2;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
         }
-        .condition-tag {
-            background: rgba(255, 26, 26, 0.07);
-            border: 1px solid #ff1a1a;
-            color: #ff1a1a;
-            padding: 8px 24px; /* Padding düzeltildi, yazı ortalandı */
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            display: inline-block;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(255, 26, 26, 0.2);
+        
+        @media (max-width: 450px) {
+            .side-banner { display: none !important; }
         }
-        .action-call {
-            font-size: 12px;
-            color: #aaa;
-            line-height: 1.6;
-            font-weight: 500;
-        }
-        .action-call strong {
-            color: #fff;
-            font-weight: 700;
+
+        /* Oyun bitti ekranındaki html ödül tablosu için ek stil */
+        #endRewardBoard {
+            margin-top: 15px;
+            background: rgba(255, 26, 26, 0.05);
+            border: 1px solid rgba(255, 26, 26, 0.3);
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <div class="poster">
-        
-        <!-- Üst Bölüm -->
-        <div class="logo-area">
+<!-- SOL AFİŞ RESMİ -->
+<div class="side-banner left-banner">
+    <img src="sol afis resmi.png" alt="Sol Afiş">
+</div>
+
+<div id="gameWrapper">
+    <!-- GİRİŞ PANELİ -->
+    <div id="loginPanel" class="panel">
+        <div class="logo-container">
             <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
-            <div class="event-title">BÜYÜK SEZON</div>
-            <div class="event-subtitle">SKOR ETKİNLİĞİ</div>
         </div>
 
-        <!-- Ödüller Bölümü -->
-        <div class="rewards-container">
-            
-            <!-- 1. OYUNCU -->
-            <div class="reward-card first-place">
-                <div class="rank-badge">
-                    <div class="medal">1</div>
-                    <div class="rank-info">
-                        <span class="rank-title">SEZON BİRİNCİSİ</span>
-                        <span class="rank-name">1. OYUNCU</span>
-                    </div>
-                </div>
-                <div class="reward-value">
-                    <span class="reward-price">100.000 TL</span>
-                    <span class="or-text">VEYA</span>
-                    <span class="reward-subprice">100 GR ALTIN</span>
-                </div>
+        <!-- GİRİŞ EKRANI ÖDÜL PANOSU -->
+        <div class="reward-board">
+            <h3>🏆 İLK 100 SKOR BÜYÜK ÖDÜLLERİ 🏆</h3>
+            <div class="reward-row">
+                <span class="rank-1">🥇 1. OYUNCU</span>
+                <span class="reward-text rank-1">100.000 TL veya 100 GR ALTIN</span>
             </div>
-
-            <!-- 2. OYUNCU -->
-            <div class="reward-card second-place">
-                <div class="rank-badge">
-                    <div class="medal">2</div>
-                    <div class="rank-info">
-                        <span class="rank-title">SEZON İKİNCİSİ</span>
-                        <span class="rank-name">2. OYUNCU</span>
-                    </div>
-                </div>
-                <div class="reward-value">
-                    <span class="reward-price">75.000 TL</span>
-                    <span class="or-text">VEYA</span>
-                    <span class="reward-subprice">50 GR ALTIN</span>
-                </div>
+            <div class="reward-row">
+                <span class="rank-2">🥈 2. OYUNCU</span>
+                <span class="reward-text rank-2">75.000 TL veya 50 GR ALTIN</span>
             </div>
-
-            <!-- 3. OYUNCU -->
-            <div class="reward-card third-place">
-                <div class="rank-badge">
-                    <div class="medal">3</div>
-                    <div class="rank-info">
-                        <span class="rank-title">SEZON ÜÇÜNCÜSÜ</span>
-                        <span class="rank-name">3. OYUNCU</span>
-                    </div>
-                </div>
-                <div class="reward-value">
-                    <span class="reward-price">50.000 TL!</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Alt Bölüm -->
-        <div class="footer-area">
-            <div class="condition-tag">İLK 100 SKOR GEÇERLİDİR</div>
-            <div class="action-call">
-                Hemen oyuna gir, kuşunu uçur ve<br>
-                <strong>Sokakların Kralı</strong> unvanını kap!
+            <div class="reward-row">
+                <span class="rank-3">🥉 3. OYUNCU</span>
+                <span class="reward-text rank-3">50.000 TL!</span>
             </div>
         </div>
 
+        <h2>Oyuncu Girişi</h2>
+        <div class="error-msg" id="loginError"></div>
+        
+        <input type="text" id="username" placeholder="İsim ve Soyisim (IC)">
+        <input type="email" id="email" placeholder="E-Posta Adresi">
+        
+        <button id="loginBtn" onclick="window.handleLogin()">Oyuna Başla</button>
     </div>
 
+    <!-- OYUN BİTTİ PANELİ (ÖDÜL PANOLU YENİ ARAYÜZ) -->
+    <div id="gameOverPanel" class="panel hidden">
+        <div class="logo-container">
+            <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
+        </div>
+        <h2 style="color: #ff1a1a; font-size: 24px; margin-bottom: 5px;">OYUN BİTTİ</h2>
+        <p id="finalScoreText" style="font-size: 18px; font-weight: bold; margin-bottom: 15px;"></p>
+
+        <!-- OYUN BİTTİ EKRANI ÖDÜL PANOSU -->
+        <div class="reward-board" id="endRewardBoard">
+            <h3 style="color: #ff1a1a;">🎁 SIRALAMANI KORU, ÖDÜLÜ KAP! 🎁</h3>
+            <div class="reward-row">
+                <span class="rank-1">🥇 1.lik Ödülü</span>
+                <span class="reward-text rank-1">100.000 TL / 100 GR ALTIN</span>
+            </div>
+            <div class="reward-row">
+                <span class="rank-2">🥈 2.lik Ödülü</span>
+                <span class="reward-text rank-2">75.000 TL / 50 GR ALTIN</span>
+            </div>
+            <div class="reward-row">
+                <span class="rank-3">🥉 3.lük Ödülü</span>
+                <span class="reward-text rank-3">50.000 TL!</span>
+            </div>
+        </div>
+
+        <p style="font-size: 12px; color: #aaa; margin-top: 10px;">İlk 100'e giren skorlar sistem tarafından kaydedilir.</p>
+        <button onclick="window.restartGame()">YENİDEN DENE</button>
+    </div>
+
+    <!-- OYUN CANVAS -->
+    <canvas id="gameCanvas" class="hidden"></canvas>
+</div>
+
+<!-- SAĞ AFİŞ RESMİ -->
+<div class="side-banner right-banner">
+    <img src="sag afis resmi.png" alt="Sağ Afiş">
+</div>
+
+<script>
+(function() {
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
+
+    let currentUser = null;
+    let milestonesReached = { 10: false, 50: false, 100: false };
+    let gameStarted = false;
+
+    const backgroundThemes = [
+        { top: "#1a80b8", bottom: "#87ceeb", building: "#104e73" }, 
+        { top: "#e65c00", bottom: "#f9d423", building: "#5a2000" }, 
+        { top: "#0f2027", bottom: "#203a43", building: "#071014" }, 
+        { top: "#2c3e50", bottom: "#3498db", building: "#1a252f" }, 
+        { top: "#61045f", bottom: "#aa076b", building: "#300030" }  
+    ];
+
+    const deviceId = btoa(navigator.userAgent + screen.width + screen.height).substring(0, 12);
+
+    window.handleLogin = function() {
+        const username = document.getElementById("username").value.trim();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const errorDiv = document.getElementById("loginError");
+        
+        if (!username || !email) {
+            errorDiv.innerText = "Lütfen alanları boş bırakmayın!";
+            errorDiv.style.display = "block";
+            return;
+        }
+
+        currentUser = { username: username, email: email};
+
+        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz Kodu:** \`${deviceId}\``, 3447003);
+
+        document.getElementById("loginPanel").classList.add("hidden");
+        canvas.classList.remove("hidden");
+        
+        gameStarted = true;
+        resizeCanvas();
+        resetGame();
+        loop();
+    };
+
+    // Yeniden başlama fonksiyonu buton için dışarı açıldı
+    window.restartGame = function() {
+        document.getElementById("gameOverPanel").classList.add("hidden");
+        canvas.classList.remove("hidden");
+        resetGame();
+    };
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let birdY, velocity, score, gameOver, pipes, frameCount, wingState;
+    let currentPipeSpeed; 
+    
+    const gravity = 0.15;
+    const jump = -4.0; 
+    const pipeGap = 170; 
+    const pipeWidth = 75;
+
+    let backBuildings = [];
+
+    function resizeCanvas() {
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        if (width > 450) width = 450;
+        if (height > 700) height = 700;
+        canvas.width = width;
+        canvas.height = height;
+
+        backBuildings = [];
+        for(let i = 0; i < 6; i++) {
+            backBuildings.push({ x: i * 90, width: 70, height: 120 + Math.random() * (canvas.height / 3) });
+        }
+    }
+    window.addEventListener("resize", () => { if(gameStarted && !gameOver) resizeCanvas(); });
+
+    function resetGame() {
+        birdY = canvas.height / 2;
+        velocity = 0;
+        score = 0;
+        gameOver = false;
+        frameCount = 0;
+        wingState = 0;
+        pipes = [];
+        currentPipeSpeed = 1.2; 
+        milestonesReached = { 10: false, 50: false, 100: false };
+        createPipe();
+    }
+
+    function createPipe() {
+        let minH = 60;
+        let maxH = canvas.height - pipeGap - 80;
+        let height = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+        pipes.push({ x: canvas.width, top: height, passed: false });
+    }
+
+    function sendDiscordLog(title, message, colorCode) {
+        if (!WEBHOOK_URL) return;
+        
+        const payload = {
+            embeds: [{
+                title: title,
+                description: message,
+                color: colorCode,
+                timestamp: new Date()
+            }]
+        };
+
+        fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        }).catch(() => {});
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (gameStarted && !gameOver) {
+            if (e.code === "Space") {
+                e.preventDefault();
+                velocity = jump; wingState = 1;
+            }
+        }
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (gameStarted && !gameOver) {
+            velocity = jump; wingState = 1;
+        }
+    }, {passive: false});
+
+    canvas.addEventListener("click", () => {
+        if (gameStarted && !gameOver) {
+            velocity = jump; wingState = 1;
+        }
+    });
+
+    function update() {
+        frameCount++;
+        if (frameCount % 10 === 0 && wingState > 0) wingState = 0;
+
+        backBuildings.forEach(b => {
+            b.x -= 0.2;
+            if(b.x + b.width < 0) b.x = canvas.width;
+        });
+
+        if (!gameOver) {
+            velocity += gravity;
+            birdY += velocity;
+
+            if (birdY + 12 >= canvas.height || birdY - 12 <= 0) {
+                triggerGameOver();
+            }
+
+            let spawnInterval = Math.max(100, Math.floor(180 - (currentPipeSpeed * 25)));
+            if (frameCount % spawnInterval === 0) createPipe();
+
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= currentPipeSpeed;
+
+                let birdX = 60; 
+                if (birdX + 12 > pipes[i].x && birdX - 12 < pipes[i].x + pipeWidth) {
+                    if (birdY - 10 < pipes[i].top || birdY + 10 > pipes[i].top + pipeGap) {
+                        triggerGameOver();
+                    }
+                }
+
+                if (!pipes[i].passed && pipes[i].x + pipeWidth < birdX) {
+                    score++;
+                    pipes[i].passed = true;
+                    
+                    if (score > 0 && score % 10 === 0) {
+                        currentPipeSpeed += 0.15; 
+                    }
+
+                    checkMilestones();
+                }
+
+                if (pipes[i].x + pipeWidth < 0) pipes.splice(i, 1);
+            }
+        }
+    }
+
+    function triggerGameOver() {
+        gameOver = true;
+        canvas.classList.add("hidden");
+        
+        // Skor yazısını güncelle ve paneli göster
+        document.getElementById("finalScoreText").innerText = `Yaptığın Skor: ${score}`;
+        document.getElementById("gameOverPanel").classList.remove("hidden");
+        
+        handleGameOverLog();
+    }
+
+    function checkMilestones() {
+        let targetMilestones = [10, 50, 100];
+        targetMilestones.forEach(m => {
+            if (score === m && !milestonesReached[m]) {
+                milestonesReached[m] = true;
+                sendDiscordLog(
+                    `🔥 ÖZEL BAŞARI: ${m} SKOR BARAJI AŞILDI!`, 
+                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **Cihaz Kodu:** \`${deviceId}\``, 
+                    65280
+                );
+            }
+        });
+
+        if (score > 100 && (score % 50 === 0 || score % 100 === 0)) {
+            sendDiscordLog(
+                `🚀 EFSANEVİ SKOR DÖNÜM NOKTASI: ${score}!`, 
+                `👑 Sokaklar Yeni Bir Kral Görüyor!\n👤 **Oyuncu:** ${currentUser.username}\n🎯 **Mevcut Rekor:** **${score}**`, 
+                16711900
+            );
+        }
+    }
+
+    function handleGameOverLog() {
+        sendDiscordLog(
+            `💀 OYUN BİTTİ (Skor Bildirimi)`, 
+            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **Cihaz:** \`${deviceId}\``, 
+            16711680
+        );
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let themeIndex = Math.min(Math.floor(score / 10), backgroundThemes.length - 1);
+        let currentTheme = backgroundThemes[themeIndex];
+
+        let bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bgGrad.addColorStop(0, currentTheme.top);
+        bgGrad.addColorStop(1, currentTheme.bottom);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = currentTheme.building;
+        backBuildings.forEach(b => {
+            ctx.fillRect(b.x, canvas.height - b.height, b.width, b.height);
+        });
+
+        pipes.forEach(p => {
+            let pipeGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+            pipeGrad.addColorStop(0, "#1e3c0d");
+            pipeGrad.addColorStop(0.3, "#55a630");
+            pipeGrad.addColorStop(0.7, "#2b9348");
+            pipeGrad.addColorStop(1, "#0a1f07");
+            ctx.fillStyle = pipeGrad;
+            
+            ctx.fillRect(p.x + 4, 0, pipeWidth - 8, p.top);
+            ctx.fillRect(p.x + 4, p.top + pipeGap, pipeWidth - 8, canvas.height - (p.top + pipeGap));
+
+            let capGrad = ctx.createLinearGradient(p.x - 4, 0, p.x + pipeWidth + 4, 0);
+            capGrad.addColorStop(0, "#224411");
+            capGrad.addColorStop(0.4, "#77cc44");
+            capGrad.addColorStop(1, "#112200");
+            ctx.fillStyle = capGrad;
+            
+            ctx.fillRect(p.x, p.top - 24, pipeWidth, 24);
+            ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, 24);
+
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.fillRect(p.x, p.top - 4, pipeWidth, 4);
+            ctx.fillRect(p.x, p.top + pipeGap + 20, pipeWidth, 4);
+        });
+
+        ctx.save();
+        ctx.translate(60, birdY);
+        
+        ctx.fillStyle = "#4b6584";
+        ctx.beginPath();
+        ctx.moveTo(-12, 0);
+        ctx.lineTo(-20, -6);
+        ctx.lineTo(-18, 6);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, 13, 0, Math.PI * 2);
+        let birdGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 13);
+        birdGrad.addColorStop(0, "#f5cd79"); 
+        birdGrad.addColorStop(0.8, "#f19066");
+        birdGrad.addColorStop(1, "#e66767");
+        ctx.fillStyle = birdGrad;
+        ctx.fill();
+        ctx.strokeStyle = "#cf6a17";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#f7d794";
+        ctx.beginPath();
+        if (wingState === 1) {
+            ctx.ellipse(-2, -4, 8, 5, -Math.PI / 4, 0, Math.PI * 2);
+        } else {
+            ctx.ellipse(-2, 2, 8, 5, Math.PI / 4, 0, Math.PI * 2);  
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(5, -4, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(6, -4, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#000";
+        ctx.fill();
+
+        ctx.fillStyle = "#e67e22";
+        ctx.beginPath();
+        ctx.moveTo(11, -2);
+        ctx.lineTo(19, -1);
+        ctx.lineTo(12, 4);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 16px Arial";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(`SKOR: ${score}`, 15, 30);
+        ctx.font = "12px Arial";
+        ctx.fillText(`HIZ SEVİYESİ: ${Math.floor(score / 10) + 1}`, 15, 50);
+        ctx.shadowBlur = 0;
+    }
+
+    function loop() {
+        update();
+        draw();
+        if (gameStarted) requestAnimationFrame(loop);
+    }
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "F12" || e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J"))) {
+            e.preventDefault();
+            return false;
+        }
+    });
+})();
+</script>
 </body>
 </html>
