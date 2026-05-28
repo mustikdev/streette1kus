@@ -2,422 +2,99 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streette 1 Kus - V2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sokaklarda 1 Kuş</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
         body {
             margin: 0;
-            background-color: #121214;
+            padding: 0;
+            background-color: #0b0c10;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             color: #fff;
         }
-        .panel {
-            background: rgba(30, 30, 35, 0.95);
-            border: 2px solid #3e3e4a;
-            border-radius: 12px;
-            padding: 30px;
-            width: 350px;
-            box-shadow: 0px 10px 30px rgba(0,0,0,0.7);
-            text-align: center;
+        .logo-container {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 15px auto;
         }
-        .panel h2 { margin-top: 0; color: #f67f25; }
+        .logo-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        .panel {
+            background: rgba(20, 20, 25, 0.96);
+            border: 2px solid #ff1a1a;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0px 0px 20px rgba(255, 26, 26, 0.4);
+            text-align: center;
+            z-index: 100;
+            position: absolute;
+        }
+        .panel h2 { margin-top: 0; color: #fff; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
         .panel input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 8px 0;
             border-radius: 6px;
-            border: 1px solid #555;
-            background: #2a2a30;
+            border: 1px solid #333;
+            background: #151518;
             color: #fff;
-            box-sizing: border-box;
+            font-size: 14px;
         }
+        .panel input:focus { border-color: #ff1a1a; outline: none; }
         .panel button {
             width: 100%;
             padding: 12px;
-            background: #f67f25;
+            background: #ff1a1a;
             border: none;
             color: white;
             font-weight: bold;
+            font-size: 15px;
             border-radius: 6px;
             cursor: pointer;
+            margin-top: 10px;
             transition: 0.2s;
+            text-transform: uppercase;
         }
-        .panel button:hover { background: #d66813; }
-        .error-msg { color: #ff4a4a; font-size: 14px; margin: 5px 0; display: none; }
+        .panel button:hover { background: #cc0000; box-shadow: 0 0 10px rgba(255, 26, 26, 0.5); }
+        .error-msg { color: #ff4a4a; font-size: 13px; margin: 5px 0; display: none; font-weight: 500; }
         .hidden { display: none !important; }
-        canvas {
-            border: 4px solid #333;
-            background: linear-gradient(to bottom, #1a1c2e, #0f101b);
-            box-shadow: 0px 10px 30px rgba(0,0,0,0.8);
+        
+        #gameWrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
         }
-        #devModeNotice {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255,0,0,0.7);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-            z-index: 10;
+        canvas {
+            background: linear-gradient(to bottom, #111324, #201a30);
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0px 0px 30px rgba(0,0,0,0.8);
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-<div id="authPanel" class="panel">
-    <h2 id="authTitle">Kayıt Ol</h2>
-    <div class="error-msg" id="authError"></div>
-    
-    <input type="text" id="icName" placeholder="IC İsim - Soyisim">
-    <input type="email" id="email" placeholder="E-Posta Adresi">
-    <input type="password" id="password" placeholder="Şifreniz">
-    <input type="password" id="passwordConfirm" placeholder="Şifre Tekrarı">
-    
-    <button id="authBtn" onclick="handleAuth()">Kayıt İşlemini Tamamla</button>
-    <p id="toggleAuthText" style="font-size: 13px; cursor: pointer; color: #aaa;" onclick="toggleAuthMode()">Zaten hesabınız var mı? Giriş Yapın</p>
-</div>
-
-<div id="targetPanel" class="panel hidden">
-    <h2>Hedef Skor Belirle</h2>
-    <p>Oyunu bitirmek için ulaşmanız gereken hedef skoru yazın.</p>
-    <input type="number" id="targetScoreInput" value="10" min="1">
-    <button onclick="startGame()">Oyunu Başlat</button>
-</div>
-
-<div id="gameContainer" class="hidden" style="position: relative;">
-    <div id="devModeNotice" class="hidden">DEVELOPER MODE: [H] Ölümsüzlük | [K] Skoru Uçur</div>
-    <canvas id="gameCanvas" width="450" height="600"></canvas>
-</div>
-
-<script>
-// --- SİSTEM VE GÜVENLİK DEĞİŞKENLERİ ---
-let isLoginMode = false;
-let currentUser = null;
-let targetScore = 10;
-let isDevMode = false;
-
-const deviceId = btoa(navigator.userAgent + screen.width + screen.height);
-
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    document.getElementById("authTitle").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-    document.getElementById("authBtn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt İşlemini Tamamla";
-    document.getElementById("toggleAuthText").innerText = isLoginMode ? "Hesabınız yok mu? Kayıt Olun" : "Zaten hesabınız var mı? Giriş Yapın";
-    
-    // Giriş yaparken sadece Mail ve Şifre shinesi kalacak
-    document.getElementById("icName").classList.toggle("hidden", isLoginMode);
-    document.getElementById("passwordConfirm").classList.toggle("hidden", isLoginMode);
-    document.getElementById("authError").style.display = "none";
-}
-
-function handleAuth() {
-    const icName = document.getElementById("icName").value.trim();
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const password = document.getElementById("password").value;
-    const passwordConfirm = document.getElementById("passwordConfirm").value;
-    const errorDiv = document.getElementById("authError");
-    
-    let db = JSON.parse(localStorage.getItem("game_users_v2")) || [];
-
-    if (!email || !password) {
-        errorDiv.innerText = "E-posta ve şifre boş bırakılamaz!";
-        errorDiv.style.display = "block";
-        return;
-    }
-
-    if (!isLoginMode) {
-        // --- KAYIT MODU ---
-        if (!icName) {
-            errorDiv.innerText = "IC İsim - Soyisim boş bırakılamaz!";
-            errorDiv.style.display = "block";
-            return;
-        }
-        if (password !== passwordConfirm) {
-            errorDiv.innerText = "Şifreler birbiriyle uyuşmuyor!";
-            errorDiv.style.display = "block";
-            return;
-        }
-        
-        // Aynı isimle başka hesap var mı kontrolü
-        const nameExists = db.some(u => u.icName === icName);
-        if (nameExists) {
-            errorDiv.innerText = "Bu İsim-Soyisim zaten kayıtlı!";
-            errorDiv.style.display = "block";
-            return;
-        }
-
-        // Yeni kullanıcıyı listeye ekle (Aynı mail serbest)
-        db.push({
-            icName: icName,
-            email: email,
-            password: password,
-            registeredDevice: deviceId
-        });
-        localStorage.setItem("game_users_v2", JSON.stringify(db));
-        
-        alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-        toggleAuthMode();
-    } else {
-        // --- GİRİŞ MODU (MAİL İLE) ---
-        const user = db.find(u => u.email === email && u.password === password);
-        if (!user) {
-            errorDiv.innerText = "Hatalı E-posta veya şifre!";
-            errorDiv.style.display = "block";
-            return;
-        }
-
-        // Cihaz Kontrolü (Donanım/Tarayıcı Kilidi)
-        if (user.registeredDevice !== deviceId) {
-            errorDiv.innerText = "HATA: Bu hesaba sadece oluşturulduğu bilgisayardan/cihazdan erişilebilir!";
-            errorDiv.style.display = "block";
-            return;
-        }
-
-        currentUser = user;
-        
-        // Developer Kontrolü (Giriş yapan kişinin IC ismi mustikdev ise hileler açılır)
-        if (user.icName.toLowerCase() === "mustikdev") {
-            isDevMode = true;
-            document.getElementById("devModeNotice").classList.remove("hidden");
-        }
-
-        document.getElementById("authPanel").classList.add("hidden");
-        document.getElementById("targetPanel").classList.remove("hidden");
-    }
-}
-
-function startGame() {
-    targetScore = parseInt(document.getElementById("targetScoreInput").value) || 10;
-    document.getElementById("targetPanel").classList.add("hidden");
-    document.getElementById("gameContainer").classList.remove("hidden");
-    resetGame();
-    loop();
-}
-
-// --- OYUN MOTORU VE GRAFİKLER (DENGEKİ HIZ VE GERÇEKÇİ SOKAK TEMASI) ---
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-let birdY, velocity, score, gameOver, pipes, frameCount;
-
-// HIZ VE YERÇEKİMİ AYARLARI (BASİTLEŞTİRİLDİ)
-let gravity = 0.16;   // Eski hız: 0.22 (Yere düşme yavaşlatıldı)
-let jump = -4.3;      // Eski zıplama: -5.2 (Kontrol kolaylaştırıldı)
-let pipeSpeed = 1.6;  // Eski boru hızı: 2.5 (Binalar artık daha insani hızda akıyor)
-let pipeGap = 165;    // Geçiş boşluğu genişletildi (Rahat geçilsin diye)
-let pipeWidth = 75;
-let godMode = false;
-
-// Arka plan yıldızları ve binaları
-let backBuildings = [];
-for(let i=0; i<6; i++) {
-    backBuildings.push({ x: i * 100, width: 70, height: 120 + Math.random()*160 });
-}
-
-function resetGame() {
-    birdY = 250;
-    velocity = 0;
-    score = 0;
-    gameOver = false;
-    frameCount = 0;
-    pipes = [];
-    createPipe();
-}
-
-function createPipe() {
-    let minH = 60;
-    let maxH = canvas.height - pipeGap - 60;
-    let height = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-    pipes.push({ x: canvas.width, top: height, passed: false });
-}
-
-// Kontroller ve Hileler
-document.addEventListener("keydown", function(e) {
-    if (e.code === "Space") {
-        if (gameOver) resetGame();
-        else velocity = jump;
-    }
-    
-    if (isDevMode) {
-        if (e.key === "h" || e.key === "H") {
-            godMode = !godMode;
-            alert("Ölümsüzlük: " + (godMode ? "AKTİF" : "PASİF"));
-        }
-        if (e.key === "k" || e.key === "K") {
-            score = targetScore - 1;
-        }
-    }
-});
-
-canvas.addEventListener("click", () => {
-    if (gameOver) resetGame();
-    else velocity = jump;
-});
-
-function update() {
-    frameCount++;
-    
-    backBuildings.forEach(b => {
-        b.x -= 0.3;
-        if(b.x + b.width < 0) b.x = canvas.width;
-    });
-
-    if (!gameOver) {
-        velocity += gravity;
-        birdY += velocity;
-
-        if ((birdY + 14 >= canvas.height || birdY - 14 <= 0) && !godMode) {
-            gameOver = true;
-        }
-
-        // Boru gelme sıklığı hız azaltıldığı için dengelendi
-        if (frameCount % 140 === 0) createPipe();
-
-        for (let i = pipes.length - 1; i >= 0; i--) {
-            pipes[i].x -= pipeSpeed;
-
-            // Çarpışma Kutusu Kontrolü
-            if (!godMode && (40 + 14 > pipes[i].x && 40 - 14 < pipes[i].x + pipeWidth)) {
-                if (birdY - 12 < pipes[i].top || birdY + 12 > pipes[i].top + pipeGap) {
-                    gameOver = true;
-                }
-            }
-
-            if (!pipes[i].passed && pipes[i].x + pipeWidth < 40) {
-                score++;
-                pipes[i].passed = true;
-                if(score >= targetScore) gameOver = true;
-            }
-
-            if (pipes[i].x + pipeWidth < 0) pipes.splice(i, 1);
-        }
-    }
-}
-
-function draw() {
-    // Akşamüstü / Gece Geçişi Arka Planı
-    let bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGrad.addColorStop(0, "#111324");
-    bgGrad.addColorStop(1, "#201a30");
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Uzaktaki Silüet Binalar
-    ctx.fillStyle = "#181a29";
-    backBuildings.forEach(b => {
-        ctx.fillRect(b.x, canvas.height - b.height, b.width, b.height);
-    });
-
-    // --- GERÇEKÇİ SOKAK BİNALARI (ASSET GRADYANI) ---
-    pipes.forEach(p => {
-        // Bina Dokusu Süslemesi (Tuğla Rengi Geçişleri)
-        let wallGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
-        wallGrad.addColorStop(0, "#4a3535");
-        wallGrad.addColorStop(0.5, "#6b4c4c");
-        wallGrad.addColorStop(1, "#3b2a2a");
-
-        ctx.fillStyle = wallGrad;
-        // Üst Bina Gövdesi
-        ctx.fillRect(p.x, 0, pipeWidth, p.top);
-        // Alt Bina Gövdesi
-        ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - (p.top + pipeGap));
-
-        // Bina Kenarlarına Beton Detayı (Eski boru ağzı yerine gerçekçi çatı hatları)
-        ctx.fillStyle = "#2b1f1f";
-        ctx.fillRect(p.x - 3, p.top - 15, pipeWidth + 6, 15);
-        ctx.fillRect(p.x - 3, p.top + pipeGap, pipeWidth + 6, 15);
-        
-        // Bina detay çizgileri (Kat pencereleri simülasyonu)
-        ctx.fillStyle = "rgba(255, 215, 0, 0.15)";
-        for(let y = 30; y < p.top - 20; y += 40) {
-            ctx.fillRect(p.x + 15, y, 15, 20);
-            ctx.fillRect(p.x + 45, y, 15, 20);
-        }
-        for(let y = p.top + pipeGap + 30; y < canvas.height - 20; y += 40) {
-            ctx.fillRect(p.x + 15, y, 15, 20);
-            ctx.fillRect(p.x + 45, y, 15, 20);
-        }
-    });
-
-    // --- GERÇEKÇİ SOKAK KUŞU (GÜVERCİN ASSETİ) ---
-    ctx.save();
-    ctx.translate(40, birdY);
-    
-    // Kuşun Gövdesi (Gri Güvercin Tonları)
-    ctx.beginPath();
-    ctx.arc(0, 0, 14, 0, Math.PI * 2);
-    let birdGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 14);
-    birdGrad.addColorStop(0, "#cbd3dc");
-    birdGrad.addColorStop(1, "#708090");
-    ctx.fillStyle = godMode ? "#00ff00" : birdGrad;
-    ctx.fill();
-    ctx.strokeStyle = "#2f4f4f";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Kuşun Kanadı (Detay)
-    ctx.beginPath();
-    ctx.ellipse(-4, 2, 8, 5, Math.PI / 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#576574";
-    ctx.fill();
-    ctx.stroke();
-
-    // Gözü
-    ctx.beginPath();
-    ctx.arc(5, -4, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = "#000";
-    ctx.fill();
-
-    // Parlak Gerçekçi Gaga
-    ctx.fillStyle = "#ffb142";
-    ctx.beginPath();
-    ctx.moveTo(12, -2);
-    ctx.lineTo(19, -4);
-    ctx.lineTo(13, 2);
-    ctx.fill();
-
-    ctx.restore();
-
-    // Skor ve Arayüz
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 22px Arial";
-    ctx.fillText(`Skor: ${score} / Hedef: ${targetScore}`, 20, 40);
-
-    if (gameOver) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.textAlign = "center";
-        
-        if (score >= targetScore) {
-            ctx.fillStyle = "#00ffcc";
-            ctx.font = "bold 34px Arial";
-            ctx.fillText("HEDEF GEÇİLDİ!", canvas.width / 2, canvas.height / 2 - 10);
-            ctx.font = "18px Arial";
-            ctx.fillStyle = "#fff";
-            ctx.fillText("Tebrikler, görevi başarıyla tamamladın.", canvas.width / 2, canvas.height / 2 + 30);
-        } else {
-            ctx.fillStyle = "#ff4a4a";
-            ctx.font = "bold 34px Arial";
-            ctx.fillText("OYUN BİTTİ", canvas.width / 2, canvas.height / 2 - 10);
-            ctx.font = "18px Arial";
-            ctx.fillStyle = "#fff";
-            ctx.fillText("Tekrar denemek için Tıkla / Space'e bas", canvas.width / 2, canvas.height / 2 + 30);
-        }
-        ctx.textAlign = "start";
-    }
-}
-
-function loop() {
-    update();
-    draw();
-    if (currentUser) requestAnimationFrame(loop);
-}
-</script>
-</body>
-</html>
+<div id="gameWrapper">
+    <div id="authPanel" class="panel">
+        <div class="logo-container">
+            <img class="logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAs0AAACWCAYAAAD96Y7vAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAABXRSURBVHhe7d17jBxXfcfx78zu2ms7ZMcQJy87XreJnTYmDRW3VNAKpa
