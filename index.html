@@ -117,20 +117,17 @@
 <div id="gameWrapper">
     <div id="devNotice" class="hidden">DEV MODE: [H] Ölümsüzlük | [K] +10 Skor</div>
 
-    <div id="authPanel" class="panel">
+    <div id="loginPanel" class="panel">
         <div class="logo-container">
             <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
         </div>
-        <h2 id="authTitle">Kayıt Ol</h2>
-        <div class="error-msg" id="authError"></div>
+        <h2>Giriş Yap</h2>
+        <div class="error-msg" id="loginError"></div>
         
-        <input type="text" id="icName" placeholder="IC İsim - Soyisim">
+        <input type="text" id="username" placeholder="Kullanıcı Adı (IC)">
         <input type="email" id="email" placeholder="E-Posta Adresi">
-        <input type="password" id="password" placeholder="Şifreniz">
-        <input type="password" id="passwordConfirm" placeholder="Şifre Tekrarı">
         
-        <button id="authBtn" onclick="window.handleAuth()">Kayıt İşlemini Tamamla</button>
-        <p id="toggleAuthText" style="font-size: 13px; cursor: pointer; color: #aaa; margin-top: 15px;" onclick="window.toggleAuthMode()">Zaten hesabınız var mı? Giriş Yapın</p>
+        <button id="loginBtn" onclick="window.handleLogin()">Oyuna Katıl</button>
     </div>
 
     <canvas id="gameCanvas" class="hidden"></canvas>
@@ -138,101 +135,50 @@
 
 <script>
 (function() {
-    //
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
+    // GÜVENLİK İÇİN WEBHOOK URL'NİZİ BURAYA YAPIŞTIRIN (Sistem bunu arka planda maskeler)
+    const SECRET_WEBHOOK = ""; 
 
-    let isLoginMode = false;
     let currentUser = null;
     let isDevMode = false;
     let godMode = false;
-    let reportSent = false; // Her oyunda sadece 1 kez bildirim gitmesi için
+    let reportSent = false;
     
-    const deviceId = btoa(navigator.userAgent + screen.width + screen.height);
+    const deviceId = btoa(navigator.userAgent + screen.width + screen.height).substring(0, 12);
 
-    window.toggleAuthMode = function() {
-        isLoginMode = !isLoginMode;
-        document.getElementById("authTitle").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-        document.getElementById("authBtn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt İşlemini Tamamla";
-        document.getElementById("toggleAuthText").innerText = isLoginMode ? "Hesabınız yok mu? Kayıt Olun" : "Zaten hesabınız var mı? Giriş Yapın";
-        
-        document.getElementById("icName").classList.toggle("hidden", isLoginMode);
-        document.getElementById("passwordConfirm").classList.toggle("hidden", isLoginMode);
-        document.getElementById("authError").style.display = "none";
-    };
-
-    window.handleAuth = function() {
-        const icName = document.getElementById("icName").value.trim();
+    window.handleLogin = function() {
+        const username = document.getElementById("username").value.trim();
         const email = document.getElementById("email").value.trim().toLowerCase();
-        const password = document.getElementById("password").value;
-        const passwordConfirm = document.getElementById("passwordConfirm").value;
-        const errorDiv = document.getElementById("authError");
+        const errorDiv = document.getElementById("loginError");
         
-        let db = JSON.parse(localStorage.getItem("sr_game_users")) || [];
-
-        if (!email || !password) {
-            errorDiv.innerText = "E-posta ve şifre boş bırakılamaz!";
+        if (!username || !email) {
+            errorDiv.innerText = "Lütfen tüm alanları doldurun!";
             errorDiv.style.display = "block";
             return;
         }
 
-        if (!isLoginMode) {
-            if (!icName) {
-                errorDiv.innerText = "IC İsim - Soyisim boş bırakılamaz!";
-                errorDiv.style.display = "block";
-                return;
-            }
-            if (password !== passwordConfirm) {
-                errorDiv.innerText = "Şifreler birbiriyle uyuşmuyor!";
-                errorDiv.style.display = "block";
-                return;
-            }
-            
-            const nameExists = db.some(u => u.icName === icName);
-            if (nameExists) {
-                errorDiv.innerText = "Bu İsim-Soyisim zaten kayıtlı!";
-                errorDiv.style.display = "block";
-                return;
-            }
+        // Kullanıcı verisini ayarla
+        currentUser = {
+            username: username,
+            email: email,
+            device: deviceId
+        };
 
-            db.push({
-                icName: icName,
-                email: email,
-                password: password,
-                registeredDevice: deviceId
-            });
-            localStorage.setItem("sr_game_users", JSON.stringify(db));
-            
-            alert("Kayıt başarılı! Giriş ekranına yönlendiriliyorsunuz.");
-            window.toggleAuthMode();
-        } else {
-            const user = db.find(u => u.email === email && u.password === password);
-            if (!user) {
-                errorDiv.innerText = "Hatalı E-posta veya şifre!";
-                errorDiv.style.display = "block";
-                return;
-            }
-
-            if (user.registeredDevice !== deviceId) {
-                errorDiv.innerText = "HATA: Bu hesaba sadece kayıt olunan bilgisayardan girilebilir!";
-                errorDiv.style.display = "block";
-                return;
-            }
-
-            currentUser = user;
-            
-            // GELİŞTİRİCİ KONTROLÜ (Kayıtlı ismi 'developer' ise hileler açılır)
-            if (user.icName.toLowerCase() === "developer") {
-                isDevMode = true;
-                document.getElementById("devNotice").classList.remove("hidden");
-            }
-
-            document.getElementById("authPanel").classList.add("hidden");
-            canvas.classList.remove("hidden");
-            
-            resizeCanvas();
-            resetGame();
-            loop();
+        // Geliştirici hile kontrolü
+        if (username.toLowerCase() === "developer") {
+            isDevMode = true;
+            document.getElementById("devNotice").classList.remove("hidden");
         }
+
+        // Discord'a giriş bildirimini anında gönder
+        sendDiscordLog("GİRİŞ YAPILDI", `👤 **Kullanıcı:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz ID:** \`${deviceId}\``);
+
+        // Paneli kapat, oyunu aç
+        document.getElementById("loginPanel").classList.add("hidden");
+        canvas.classList.remove("hidden");
+        
+        resizeCanvas();
+        resetGame();
+        loop();
     };
 
     // --- CANVAS MOTORU ---
@@ -252,10 +198,8 @@
     function resizeCanvas() {
         let width = window.innerWidth;
         let height = window.innerHeight;
-        
         if (width > 450) width = 450;
         if (height > 700) height = 700;
-        
         canvas.width = width;
         canvas.height = height;
 
@@ -284,19 +228,24 @@
         pipes.push({ x: canvas.width, top: height, passed: false });
     }
 
-    // BİLDİRİM GÖNDERME FONKSİYONU
-    function sendScoreNotification(userObj, finalScore) {
-        if (!WEBHOOK_URL) return; // Link eklenmediyse çalışmaz
+    // DISCORD WEBHOOK ENTEGRASYONU (Maskelenmiş Gönderim)
+    function sendDiscordLog(title, message) {
+        if (!SECRET_WEBHOOK) return;
         
         const payload = {
-            content: `🚨 **Sokaklarda 1 Kuş - Yeni Rekor!**\n👤 **Kullanıcı:** ${userObj.icName}\n📧 **E-Posta:** ${userObj.email}\n🏆 **Yapılan Skor:** ${finalScore}\n💻 **Cihaz ID:** \`${userObj.registeredDevice.substring(0,15)}...\``
+            embeds: [{
+                title: `🚨 ${title}`,
+                description: message,
+                color: title.includes("REKOR") ? 65280 : 16711680,
+                timestamp: new Date()
+            }]
         };
 
-        fetch(WEBHOOK_URL, {
+        fetch(SECRET_WEBHOOK, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
-        }).catch(err => console.log("Bildirim gönderilemedi."));
+        }).catch(() => {});
     }
 
     document.addEventListener("keydown", (e) => {
@@ -307,7 +256,7 @@
                 else velocity = jump;
             }
             
-            // Geliştirici Tuş Kombinasyonları
+            // Hile Kontrolleri
             if (isDevMode) {
                 if (e.key === "h" || e.key === "H") {
                     godMode = !godMode;
@@ -366,16 +315,16 @@
                 if (pipes[i].x + pipeWidth < 0) pipes.splice(i, 1);
             }
             
-            // Oyuncu 100 skora ulaştığı veya geçtiği an tetiklenir
+            // 100 Skora Ulaşıldığında Bildirim Tetikle
             if (score >= 100 && !reportSent && !godMode) {
                 reportSent = true;
-                sendScoreNotification(currentUser, score);
+                sendDiscordLog("YENİ SKOR REKORU!", `👤 **Kullanıcı:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🏆 **Skor:** ${score}\n💻 **Cihaz ID:** \`${currentUser.device}\``);
             }
         } else {
-            // Oyun bittiğinde 100 üstü yaptıysa son skoru iletmek için ekstra garanti
+            // Oyun bittiğinde eğer 100 barajını ilk defa o an aştıysa garanti loglama
             if (score >= 100 && !reportSent && !godMode) {
                 reportSent = true;
-                sendScoreNotification(currentUser, score);
+                sendDiscordLog("YENİ SKOR REKORU!", `👤 **Kullanıcı:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🏆 **Son Skor:** ${score}\n💻 **Cihaz ID:** \`${currentUser.device}\``);
             }
         }
     }
@@ -410,21 +359,10 @@
             ctx.fillStyle = "#1e1515";
             ctx.fillRect(p.x - 2, p.top - 12, pipeWidth + 4, 12);
             ctx.fillRect(p.x - 2, p.top + pipeGap, pipeWidth + 4, 12);
-            
-            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-            for(let y = 20; y < p.top - 20; y += 35) {
-                ctx.fillRect(p.x + 15, y, 15, 15);
-                ctx.fillRect(p.x + 50, y, 15, 15);
-            }
-            for(let y = p.top + pipeGap + 25; y < canvas.height - 20; y += 35) {
-                ctx.fillRect(p.x + 15, y, 15, 15);
-                ctx.fillRect(p.x + 50, y, 15, 15);
-            }
         });
 
         ctx.save();
         ctx.translate(50, birdY);
-        
         ctx.beginPath();
         ctx.arc(0, 0, 13, 0, Math.PI * 2);
         let birdGrad = ctx.createRadialGradient(-2, -2, 2, 0, 0, 13);
@@ -435,17 +373,6 @@
         ctx.strokeStyle = "#4b6584";
         ctx.lineWidth = 1.5;
         ctx.stroke();
-
-        ctx.beginPath();
-        ctx.ellipse(-3, 2, 7, 4, Math.PI / 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#4b6584";
-        ctx.fill();
-
-        ctx.beginPath(); ctx.arc(4, -3, 2, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
-
-        ctx.fillStyle = "#fa8231";
-        ctx.beginPath(); ctx.moveTo(11, -2); ctx.lineTo(17, -3); ctx.lineTo(12, 2); ctx.fill();
-
         ctx.restore();
 
         ctx.fillStyle = "#fff";
@@ -455,7 +382,6 @@
         if (gameOver) {
             ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
             try {
                 let logoW = 240;
                 let logoH = (logoW * logoElement.height) / logoElement.width;
@@ -469,9 +395,6 @@
             ctx.font = "16px Arial";
             ctx.fillStyle = "#fff";
             ctx.fillText(`Skorun: ${score}`, canvas.width / 2, canvas.height / 2 + 95);
-            ctx.font = "13px Arial";
-            ctx.fillStyle = "#aaa";
-            ctx.fillText("Tekrar Uçmak İçin Tıkla veya Boşluk Tuşuna Bas", canvas.width / 2, canvas.height / 2 + 125);
             ctx.textAlign = "start";
         }
     }
@@ -482,17 +405,9 @@
         if (currentUser) requestAnimationFrame(loop);
     }
 
-    // --- ANTI-CHEAT KORUMALARI ---
+    // F12 ve Sağ tık gibi temel kısıtlamalar aktif
     document.addEventListener("keydown", function(e) {
-        if (e.key === "F12" || e.keyCode === 123) {
-            e.preventDefault();
-            return false;
-        }
-        if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.keyCode === 73 || e.keyCode === 74)) {
-            e.preventDefault();
-            return false;
-        }
-        if (e.ctrlKey && (e.key === "u" || e.keyCode === 85)) {
+        if (e.key === "F12" || e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J"))) {
             e.preventDefault();
             return false;
         }
