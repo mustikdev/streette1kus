@@ -9,10 +9,10 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-        }
-        body {
             margin: 0;
             padding: 0;
+        }
+        body {
             background-color: #0b0c10;
             display: flex;
             justify-content: center;
@@ -22,15 +22,14 @@
             overflow: hidden;
             color: #fff;
         }
-        .logo-container {
-            width: 100%;
-            max-width: 320px;
-            margin: 0 auto 15px auto;
-        }
-        .logo-img {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
+        #gameWrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
         }
         .panel {
             background: rgba(20, 20, 25, 0.96);
@@ -38,13 +37,31 @@
             border-radius: 12px;
             padding: 25px;
             width: 90%;
-            max-width: 360px;
+            max-width: 380px;
             box-shadow: 0px 0px 20px rgba(255, 26, 26, 0.4);
             text-align: center;
             z-index: 100;
             position: absolute;
         }
-        .panel h2 { margin-top: 0; color: #fff; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .logo-container {
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .logo-img {
+            width: 100%;
+            max-height: 60px;
+            object-fit: contain;
+        }
+        .panel h2 { 
+            margin-top: 0; 
+            margin-bottom: 15px;
+            color: #fff; 
+            font-size: 20px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
         .panel input {
             width: 100%;
             padding: 12px;
@@ -66,7 +83,7 @@
             font-size: 15px;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 12px;
             transition: 0.2s;
             text-transform: uppercase;
         }
@@ -74,15 +91,6 @@
         .error-msg { color: #ff4a4a; font-size: 13px; margin: 5px 0; display: none; font-weight: 500; }
         .hidden { display: none !important; }
         
-        #gameWrapper {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #000;
-        }
         canvas {
             background: linear-gradient(to bottom, #111324, #201a30);
             max-width: 100%;
@@ -97,4 +105,53 @@
 <div id="gameWrapper">
     <div id="authPanel" class="panel">
         <div class="logo-container">
-            <img class="logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAs0AAACWCAYAAAD96Y7vAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAABXRSURBVHhe7d17jBxXfcfx78zu2ms7ZMcQJy87XreJnTYmDRW3VNAKpa
+            <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
+        </div>
+        <h2 id="authTitle">Kayıt Ol</h2>
+        <div class="error-msg" id="authError"></div>
+        
+        <input type="text" id="icName" placeholder="IC İsim - Soyisim">
+        <input type="email" id="email" placeholder="E-Posta Adresi">
+        <input type="password" id="password" placeholder="Şifreniz">
+        <input type="password" id="passwordConfirm" placeholder="Şifre Tekrarı">
+        
+        <button id="authBtn" onclick="toggleAuthMode ? window.handleAuth() : null">Kayıt İşlemini Tamamla</button>
+        <p id="toggleAuthText" style="font-size: 13px; cursor: pointer; color: #aaa; margin-top: 15px;" onclick="window.toggleAuthMode()">Zaten hesabınız var mı? Giriş Yapın</p>
+    </div>
+
+    <div id="targetPanel" class="panel hidden">
+        <div class="logo-container">
+            <img class="logo-img" src="https://raw.githubusercontent.com/mustikdev/streette1kus/main/image_bb7b42.png" alt="Street Roleplay Logo">
+        </div>
+        <h2 style="color: #ff1a1a;">Hedef Skor</h2>
+        <p style="font-size: 14px; color: #ccc; margin-bottom: 10px;">Sokaklarda hedefe ulaşmak için bir skor belirleyin:</p>
+        <input type="number" id="targetScoreInput" value="10" min="1">
+        <button onclick="window.startGame()">Oyunu Başlat</button>
+    </div>
+
+    <canvas id="gameCanvas" class="hidden"></canvas>
+</div>
+
+<script>
+(function() {
+    let isLoginMode = false;
+    let currentUser = null;
+    let targetScore = 10;
+    
+    const deviceId = btoa(navigator.userAgent + screen.width + screen.height);
+
+    window.toggleAuthMode = function() {
+        isLoginMode = !isLoginMode;
+        document.getElementById("authTitle").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
+        document.getElementById("authBtn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt İşlemini Tamamla";
+        document.getElementById("toggleAuthText").innerText = isLoginMode ? "Hesabınız yok mu? Kayıt Olun" : "Zaten hesabınız var mı? Giriş Yapın";
+        
+        document.getElementById("icName").classList.toggle("hidden", isLoginMode);
+        document.getElementById("passwordConfirm").classList.toggle("hidden", isLoginMode);
+        document.getElementById("authError").style.display = "none";
+    };
+
+    window.handleAuth = function() {
+        const icName = document.getElementById("icName").value.trim();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document
