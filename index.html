@@ -55,7 +55,7 @@
             object-fit: contain;
         }
         
-        /* --- YENİ EKLENEN ÖDÜL PANOSU STİLLERİ --- */
+        /* --- ÖDÜL PANOSU STİLLERİ --- */
         .reward-board {
             background: rgba(10, 10, 12, 0.8);
             border: 1px dashed #ffcc00;
@@ -81,16 +81,15 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .reward-row:last-child { border-bottom: none; }
-        .rank-1 { color: #ffd700; font-weight: bold; } /* Altın */
-        .rank-2 { color: #c0c0c0; font-weight: bold; } /* Gümüş */
-        .rank-3 { color: #cd7f32; font-weight: bold; } /* Bronz */
+        .rank-1 { color: #ffd700; font-weight: bold; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
         .reward-text { text-align: right; font-weight: 600; }
 
         @keyframes pulse {
             from { text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); }
             to { text-shadow: 0 0 15px rgba(255, 204, 0, 1); }
         }
-        /* ---------------------------------------- */
 
         .panel h2 { 
             margin-top: 0; 
@@ -137,7 +136,7 @@
             z-index: 1;
         }
 
-        /* --- CSS İLE YENİDEN TASARLANAN SAĞ VE SOL AFİŞ PANELERİ --- */
+        /* --- SAĞ VE SOL AFİŞ PANELERİ --- */
         .side-banner {
             position: absolute;
             top: 50%;
@@ -164,7 +163,6 @@
         .left-banner { left: calc(50% - 580px); }
         .right-banner { right: calc(50% - 580px); }
 
-        /* Afiş İçerik Tasarımları */
         .banner-header {
             border-bottom: 2px dashed rgba(255, 26, 26, 0.4);
             width: 100%;
@@ -241,7 +239,6 @@
             line-height: 1.4;
         }
 
-        /* Ekran Boyutuna Göre Yan Panellerin Gizlenmesi/Ayarlanması */
         @media (max-width: 1150px) {
             .side-banner { display: none !important; }
         }
@@ -382,6 +379,7 @@
 
 <script>
 (function() {
+    // DİKKAT: Webhook URL'sini aşağıda doğrudan bulundurmak her zaman risklidir.
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1509503712148848752/suQqOT7wZy7KDCwC1vXmT-8ByoTaXSPpQWSe6NcVUETNbuJhyKG2nnOmkcGyrwO20JH0"; 
 
     let currentUser = null;
@@ -396,8 +394,6 @@
         { top: "#61045f", bottom: "#aa076b", building: "#300030" }  
     ];
 
-    const deviceId = btoa(navigator.userAgent + screen.width + screen.height).substring(0, 12);
-
     window.handleLogin = function() {
         const username = document.getElementById("username").value.trim();
         const email = document.getElementById("email").value.trim().toLowerCase();
@@ -411,7 +407,7 @@
 
         currentUser = { username: username, email: email};
 
-        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}\n💻 **Cihaz Kodu:** \`${email}\``, 3447003);
+        sendDiscordLog("🎮 OYUNA GİRİŞ YAPILDI", `👤 **Oyuncu:** ${username}\n📧 **E-Posta:** ${email}`, 3447003);
 
         document.getElementById("loginPanel").classList.add("hidden");
         canvas.classList.remove("hidden");
@@ -580,7 +576,7 @@
                 milestonesReached[m] = true;
                 sendDiscordLog(
                     `🔥 ÖZEL BAŞARI: ${m} SKOR BARAJI AŞILDI!`, 
-                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**\n💻 **E-POSTA:** \`${email}\``, 
+                    `🏆 **Tebrikler!**\n👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n🎯 **Ulaşılan Özel Skor:** **${score}**`, 
                     65280
                 );
             }
@@ -598,7 +594,7 @@
     function handleGameOverLog() {
         sendDiscordLog(
             `💀 OYUN BİTTİ (Skor Bildirimi)`, 
-            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**\n💻 **E-POSTA:** \`${email}\``, 
+            `👤 **Oyuncu:** ${currentUser.username}\n📧 **E-Posta:** ${currentUser.email}\n📊 **Yaptığı Skor:** **${score}**`, 
             16711680
         );
     }
@@ -712,12 +708,34 @@
         if (gameStarted) requestAnimationFrame(loop);
     }
 
+    // --- GELİŞMİŞ KLAVYE VE KONSOL ENGELLEME SİSTEMİ ---
     document.addEventListener("keydown", function(e) {
-        if (e.key === "F12" || e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J"))) {
+        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+F engelleme
+        if (
+            e.keyCode === 123 || 
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "i" || e.key === "j")) ||
+            (e.ctrlKey && (e.key === "U" || e.key === "u" || e.key === "S" || e.key === "s" || e.key === "F" || e.key === "f"))
+        ) {
             e.preventDefault();
             return false;
         }
     });
+
+    // Konsol Açıldığında Sonsuz Döngüye Sokan ve Kilitleyen Mekanizma (Anti-DevTools)
+    setInterval(function() {
+        const startTime = +new Date();
+        debugger; // Konsol açıksa kod burada takılır
+        const endTime = +new Date();
+        if (endTime - startTime > 100) {
+            // Eğer debugger tetiklendiyse konsol açıktır, sekmeyi veya oyunu kilitle
+            score = 0; 
+            gameOver = true;
+            window.location.reload(); // Sayfayı sürekli yenileyerek bezdirme
+        }
+        console.clear(); // Konsolu sürekli temiz tut
+    }, 1000);
+
 })();
 </script>
 </body>
