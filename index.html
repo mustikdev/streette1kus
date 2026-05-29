@@ -273,7 +273,15 @@
         <input type="email" id="email" placeholder="E-Posta Adresi">
         
         <button id="loginBtn" onclick="window.handleLogin()">Oyuna Başla</button>
+		
+		<div class="leaderboard-container" style="margin-top: 15px;">
+    <h3 style="color: #ff1a1a; margin-bottom: 10px; font-size: 14px;">🏆 TOP 3 LİDERLER 🏆</h3>
+    <div id="loginLeaderboardList">
+        <p style="color: #888; font-size: 12px;">Skorlar yükleniyor...</p>
     </div>
+	</div>
+    </div>
+	
 
     <div id="gameOverPanel" class="panel hidden">
         <div class="logo-container">
@@ -329,8 +337,9 @@
 
 
 (function() {
-async function liderleriGoster() {
-    const listDiv = document.getElementById("leaderboardList");
+// Güncellenmiş fonksiyon
+async function liderleriGoster(targetId = "leaderboardList") {
+    const listDiv = document.getElementById(targetId);
     try {
         const response = await fetch(WORKER_URL);
         const top3 = await response.json();
@@ -342,9 +351,14 @@ async function liderleriGoster() {
             </div>
         `).join('');
     } catch (e) {
-        listDiv.innerHTML = "<p style='color: #ff4a4a;'>Tabloya şu an ulaşılamıyor.</p>";
+        listDiv.innerHTML = "<p style='color: #ff4a4a; font-size: 12px;'>Tabloya şu an ulaşılamıyor.</p>";
     }
 }
+
+// Sayfa yüklendiğinde giriş ekranı için liderleri getir
+document.addEventListener("DOMContentLoaded", () => {
+    liderleriGoster("loginLeaderboardList");
+});
 
 
 // Worker URL'ini buraya yaz (Worker'ının Overview sayfasından kopyala)
