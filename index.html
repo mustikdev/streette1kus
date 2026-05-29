@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sokaklarda 1 Kuş</title>
     <style>
+		/* Liderlik Tablosu Konteyneri */
+	.leaderboard-container {
+    background: rgba(10, 10, 12, 0.9);
+    border: 1px solid #ff1a1a;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 26, 26, 0.2);
+    font-size: 14px;
+}
+
+.leaderboard-row:last-child { border-bottom: none; }
+
+.leaderboard-name { color: #fff; font-weight: bold; }
+.leaderboard-score { color: #ffcc00; font-family: monospace; font-size: 16px; }
+
+
         * {
             box-sizing: border-box;
             user-select: none;
@@ -275,11 +299,20 @@
         </div>
 
         <p style="font-size: 12px; color: #aaa; margin-top: 10px;">İlk 100'e giren skorlar sistem tarafından kaydedilir.</p>
-        <button onclick="window.restartGame()">YENİDEN DENE</button>
+        <div class="leaderboard-container">
+    <h3 style="color: #ff1a1a; margin-bottom: 10px; font-size: 16px;">🏆 TOP 3 LİDERLER 🏆</h3>
+    <div id="leaderboardList">
+        <p style="color: #888;">Skorlar yükleniyor...</p>
+    </div>
+</div>
+		<button onclick="window.restartGame()">YENİDEN DENE</button>
     </div>
 
     <canvas id="gameCanvas" class="hidden"></canvas>
 </div>
+
+
+
 
 <div class="side-banner right-banner">
 	<a href="https://github.com/mustikdev/streette1kus" target="_blank" class="ad-space">
@@ -292,38 +325,76 @@
 </div>
 
 <script>
+
+
+
 (function() {
+async function liderleriGoster() {
+    const listDiv = document.getElementById("leaderboardList");
+    try {
+        const response = await fetch(WORKER_URL);
+        const top3 = await response.json();
+        
+        listDiv.innerHTML = top3.map((p, index) => `
+            <div class="leaderboard-row">
+                <span class="leaderboard-name">${index + 1}. ${p.username}</span>
+                <span class="leaderboard-score">${p.score} Puan</span>
+            </div>
+        `).join('');
+    } catch (e) {
+        listDiv.innerHTML = "<p style='color: #ff4a4a;'>Tabloya şu an ulaşılamıyor.</p>";
+    }
+}
+
+
+// Worker URL'ini buraya yaz (Worker'ının Overview sayfasından kopyala)
+const WORKER_URL = "https://skor-api.mustafakisisel0.workers.dev"; 
+
+async function skorGonder(username, score) {
+    try {
+        await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, score: score })
+        });
+        console.log("Puan kaydedildi!");
+    } catch (error) {
+        console.error("Hata:", error);
+    }
+}
+
+
     // MOBİL CİHAZ ENGELİ
-// const isMobile =
-   // /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
-    // || window.innerWidth <= 900;
+const isMobile =
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
+    || window.innerWidth <= 900;
 
-// if (isMobile) {
-   // document.body.innerHTML = `
-     //   <div style="
-       //     width:100vw;
-         //   height:100vh;
-           // background:#0b0c10;
-//            display:flex;
-  //          justify-content:center;
-    //        align-items:center;
-      //      flex-direction:column;
-        //    color:white;
-//            font-family:Segoe UI,sans-serif;
-  //          text-align:center;
-    //        padding:20px;
-     //   ">
-    //        <h1 style="color:#ff1a1a; margin-bottom:15px;">
-    //            MOBİL GİRİŞ YASAK
-    //        </h1>
+if (isMobile) {
+    document.body.innerHTML = `
+        <div style="
+            width:100vw;
+            height:100vh;
+            background:#0b0c10;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            flex-direction:column;
+            color:white;
+            font-family:Segoe UI,sans-serif;
+            text-align:center;
+            padding:20px;
+        ">
+            <h1 style="color:#ff1a1a; margin-bottom:15px;">
+                MOBİL GİRİŞ YASAK
+            </h1>
 
-  //          <p style="max-width:500px; line-height:1.6; color:#ccc;">
-    //            Bu oyuna yalnızca masaüstü bilgisayarlardan giriş yapılabilir.
-//        </p>
-//      </div>
-//  `;
-//    throw new Error("Mobil erişim engellendi.");
-//}
+            <p style="max-width:500px; line-height:1.6; color:#ccc;">
+                Bu oyuna yalnızca masaüstü bilgisayarlardan giriş yapılabilir.
+            </p>
+        </div>
+    `;
+    throw new Error("Mobil erişim engellendi.");
+}
 
     const PROXY_URL = "https://discord-bridge.mustafakisisel0.workers.dev"; 
 
@@ -506,12 +577,20 @@
         }
     }
 
-    function triggerGameOver() {
+   function triggerGameOver() {
         gameOver = true;
         canvas.classList.add("hidden");
         
         document.getElementById("finalScoreText").innerText = `Yaptığın Skor: ${score}`;
         document.getElementById("gameOverPanel").classList.remove("hidden");
+        
+        // 1. Skoru gönder
+        skorGonder(currentUser.username, score);
+        
+        // 2. Tabloyu 1 saniye gecikmeli yükle (verinin işlenmesi için kısa bir süre bekle)
+        setTimeout(() => {
+            liderleriGoster();
+        }, 1000);
         
         handleGameOverLog();
     }
