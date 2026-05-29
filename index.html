@@ -294,36 +294,36 @@
 <script>
 (function() {
     // MOBİL CİHAZ ENGELİ
-const isMobile =
-    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
-    || window.innerWidth <= 900;
+// const isMobile =
+   // /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
+    // || window.innerWidth <= 900;
 
-if (isMobile) {
-    document.body.innerHTML = `
-        <div style="
-            width:100vw;
-            height:100vh;
-            background:#0b0c10;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            flex-direction:column;
-            color:white;
-            font-family:Segoe UI,sans-serif;
-            text-align:center;
-            padding:20px;
-        ">
-            <h1 style="color:#ff1a1a; margin-bottom:15px;">
-                MOBİL GİRİŞ YASAK
-            </h1>
+// if (isMobile) {
+   // document.body.innerHTML = `
+     //   <div style="
+       //     width:100vw;
+         //   height:100vh;
+           // background:#0b0c10;
+//            display:flex;
+  //          justify-content:center;
+    //        align-items:center;
+      //      flex-direction:column;
+        //    color:white;
+//            font-family:Segoe UI,sans-serif;
+  //          text-align:center;
+    //        padding:20px;
+     //   ">
+    //        <h1 style="color:#ff1a1a; margin-bottom:15px;">
+    //            MOBİL GİRİŞ YASAK
+    //        </h1>
 
-            <p style="max-width:500px; line-height:1.6; color:#ccc;">
-                Bu oyuna yalnızca masaüstü bilgisayarlardan giriş yapılabilir.
-            </p>
-        </div>
-    `;
-    throw new Error("Mobil erişim engellendi.");
-}
+  //          <p style="max-width:500px; line-height:1.6; color:#ccc;">
+    //            Bu oyuna yalnızca masaüstü bilgisayarlardan giriş yapılabilir.
+//        </p>
+//      </div>
+//  `;
+//    throw new Error("Mobil erişim engellendi.");
+//}
 
     const PROXY_URL = "https://discord-bridge.mustafakisisel0.workers.dev"; 
 
